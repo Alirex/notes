@@ -469,6 +469,10 @@ repos:
   - https://github.com/facebook/pyrefly
   - В активній розробці. Поки що може не підтримувати все, що mypy. Треба тестити.
   - Від Facebook.
+- Zuban
+  - https://github.com/zubanls/zuban
+  - https://zubanls.com/
+  - Потенційно цікавий варіант.
 
 ### Навіщо анотації
 
