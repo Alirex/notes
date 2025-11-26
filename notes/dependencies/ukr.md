@@ -141,6 +141,38 @@
 - головний, з тим що саме ви додали.
 - допоміжний, з тим що ви додали й усі залежності ваших залежностей. Автогенерований.
 
+## Install / Встановлення
+
+Для екосистем різних мов є платформи, з яких можна звантажити залежності.
+
+Наприклад:
+
+- Python
+  - https://pypi.org/
+- Rust
+  - https://crates.io/
+- JavaScript
+  - https://npmjs.com/
+
+Також, нерідко, можна встановлювати залежності прямо з GitHub та інших подібних місць.
+
+Деякі залежності при використанні мають ту саму назву, як і при встановленні. Наприклад [pydantic](https://pypi.org/project/pydantic/).
+
+Деякі мають різні назви. Наприклад [pillow](https://pypi.org/project/pillow/).
+Яка при використанні імпортується як [PIL](https://pillow.readthedocs.io/en/latest/handbook/tutorial.html).
+Наприклад, тому що це альтернативна бібліотека, яка прийшла на заміну оригінальній [PIL](https://pypi.org/project/PIL/).
+
+Іноді разом із залежністю можна встановити додаткові групи залежностей.
+Як тут, з [квадратними дужками](https://docs.pydantic.dev/latest/install/#optional-dependencies).
+
+Також у Python іноді корисно встановити додаткові бібліотеки з інформацією про типи. Наприклад:
+
+- [django-stubs](https://pypi.org/project/django-stubs/)
+- [matplotlib-stubs](https://pypi.org/project/matplotlib-stubs/)
+- [types-networkx](https://pypi.org/project/types-networkx/)
+
+Це особливо актуально, якщо ви використовуєте статичну типізацію та аналізатори типів, такі як [mypy](https://mypy.readthedocs.io/en/stable/installed_packages.html#installed-packages).
+
 ---
 
 # Tools for dependency management / Інструменти для керування залежностями
@@ -167,7 +199,7 @@
 - https://realpython.com/dependency-management-python-poetry/
   - How to import requirements.txt into Poetry
     - https://timonweb.com/python/how-to-import-requirementstxt-into-poetry/
-    - poetry add --group main $(cat requirements.txt | grep "#" --invert-match)
+    - `poetry add --group main $(cat requirements.txt | grep "#" --invert-match)`
 
 ## pip + requirements.txt
 
