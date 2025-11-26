@@ -52,19 +52,24 @@ https://peps.python.org/pep-0008/
 
 ---
 
-# Pre-commit hooks
+# Pre-commit (prek) hooks
 
-Є інструмент “Pre-commit”:
+Є інструмент “prek”:
+
+- https://prek.j178.dev/
+- https://github.com/j178/prek
+
+Це покращений варіант “Pre-commit”:
 
 - https://pre-commit.com/
 - https://github.com/pre-commit/pre-commit
 
-Він дозволяє запускати інструменти, наприклад, перед тим як буде зроблений commit.
+Це дозволяє запускати інструменти, наприклад, перед тим як буде зроблений commit.
 Тут є більше варіантів:
 
 https://pre-commit.com/#supported-git-hooks
 
-## Чому pre-commit?
+## Чому prek?
 
 Узагалі, подібний функціонал можна реалізувати не тільки через інструмент.
 
@@ -76,10 +81,6 @@ https://pre-commit.com/#supported-git-hooks
 
 ## Аналоги
 
-- prek
-  - https://github.com/j178/prek
-  - на rust. Зараз розробляється.
-  - Сподіваюсь, колись він стане production-ready. Тоді, імовірно, я б перейшов на нього.
 - husky
   - https://typicode.github.io/husky/
   - https://github.com/typicode/husky
@@ -101,7 +102,7 @@ Pre-commit — один із варіантів, як можна це орган
 Урешті-решт, якщо є можливість, то гарно зробити як локальний запуск перевірок, щоб швидко виправити можливі проблеми,
 так і запуск їх у CI/CD.
 
-## Які інструменти можно використовувати?
+## Які інструменти можна використовувати?
 
 Ви можете використовувати у pre-commit окремі інструменти, які створені як репозиторії,
 які ви реєструєте в конфігураційному файлі.
@@ -124,21 +125,19 @@ https://pre-commit.com/#repository-local-hooks
 
 Інструменти, додані через посилання на репозиторій, будуть автоматично встановлені в ізольоване оточення.
 
-## Встановлення pre-commit
-
-Його можна додати як dev-залежність у ваш проєкт.
-
-Але я використовую його не тільки для проєктів на Python.
-Тож я встановлюю його в систему. І вам раджу.
-
-Завдяки [uv](https://docs.astral.sh/uv/) це зробити ще дуже просто.
-
-Є ще варіант з pipx. Але uv його замінює.
+## Встановлення prek
 
 Команда з установлення та оновлення. Можна запускати повторно.
 
 ```shell
-uv tool install pre-commit --upgrade
+if ! command -v prek &> /dev/null; then
+    curl --proto '=https' --tlsv1.2 -LsSf https://github.com/j178/prek/releases/download/v0.2.19/prek-installer.sh | sh &&\
+    prek self update
+else
+    prek self update
+fi
+
+prek --version
 ```
 
 ## Ініціалізація pre-commit
@@ -156,7 +155,13 @@ uv tool install pre-commit --upgrade
 Команда для реєстрації:
 
 ```shell
-pre-commit install
+prek install
+```
+
+чи так, якщо до цього у вас вже був "pre-commit"
+
+```shell
+prek install --overwrite
 ```
 
 ## Запуск pre-commit
@@ -164,7 +169,7 @@ pre-commit install
 Ви можете запустити всі інструменти на всі файли з Pre-commit через команду:
 
 ```shell
-pre-commit run --all-files
+prek run --all-files
 ```
 
 Це може бути особливо актуально, якщо ви змінювали налаштування для інструментів.
@@ -172,8 +177,10 @@ pre-commit run --all-files
 Ви можете інструмент на якусь папку
 [таким чином](https://pre-commit.com/#pre-commit-run:~:text=git%20ls%2Dfiles%20%2D%2D%20%27*.py%27%20%7C%20xargs%20pre%2Dcommit%20run%20%2D%2Dfiles):
 
+(можна адаптувати під `prek` замість `pre-commit`)
+
 ```shell
-git ls-files -- your/folder | xargs pre-commit run --files
+git ls-files -- your/folder | xargs prek run --files
 ```
 
 Але більшу кількість разів він буде запускатись автоматично перед комітом.
@@ -228,7 +235,9 @@ exclude: |
 
 - https://github.com/pre-commit/action
 
-Тобто, pre-commit не ставить метою повністю замініти запуск різних перевірок під час CI/CD процесів.
+Чи адаптувати prek під цю задачу.
+
+Тобто, pre-commit/prek не ставить метою повністю замініти запуск різних перевірок під час CI/CD процесів.
 Особливо у проєктах з великою командою. Де хтось може пропустити запуск pre-commit локально.
 
 Але він може бути частиною цього процесу.
@@ -301,6 +310,9 @@ uv tool upgrade ruff
 ```toml
 [tool.ruff]
 line-length = 120
+fix = true
+unsafe-fixes = true
+show-fixes = true
 
 extend-exclude = [
 ]
@@ -320,9 +332,6 @@ extend-ignore = [
     "G004",
     # Consider {expression} instead of string join.
     "FLY002",
-    # TODO: Remove after this will be better implemented in the IDE (refactoring with moving).
-    # Type alias {name} uses TypeAlias annotation instead of the type keyword
-    "UP040",
     # TODOs
     # Author.
     "TD002",
@@ -367,6 +376,15 @@ allow-dict-calls-with-keyword-arguments = true
 "test_*.py" = [
     # Allow `assert` statements in tests.
     "S101",
+]
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+]
+runtime-evaluated-decorators = [
+    "pydantic.validate_call",
+    "app.command",
 ]
 ```
 
@@ -433,6 +451,10 @@ uv add --dev mypy
 ```toml
 [tool.mypy]
 strict = true
+
+plugins = [
+    "pydantic.mypy",
+]
 ```
 
 Інформація про версію Python буде взята
@@ -505,6 +527,50 @@ repos:
   - https://eadwincode.github.io/django-ninja-extra/
 
 І т.і.
+
+Додатково:
+
+- type concepts
+  - https://docs.basedpyright.com/latest/getting_started/type-concepts/
+
+## BasedPyright
+
+Це дещо перероблений pyright. З різними покращеннями. Особливо щодо перевірки типів.
+
+https://docs.basedpyright.com/latest/
+
+Інтеграція з IDE:
+
+- https://docs.basedpyright.com/latest/installation/ides/
+
+Я дізнався про цей лінтер з IDE [Zed](https://zed.dev/). Там воно використовується по замовченню.
+
+Серед приємних речей, якщо його додати в IDE, то він приємно виводить інформацію про типи.
+Особливо у Zed.
+Це можна налаштувати.
+
+Можна додати таке налаштування у `pyproject.toml`:
+
+```toml
+[tool.basedpyright]
+typeCheckingMode = "strict"
+```
+
+І такі налаштування у `pre-commit-config.yaml`:
+
+```yaml
+repos:
+  - repo: local
+    # Hooks with local scripts.
+    hooks:
+      - id: basedpyright
+        # Check Python code style.
+        name: basedpyright
+        entry: uv run basedpyright
+        language: system
+        types: [python]
+        pass_filenames: false
+```
 
 ## Sourcery
 
