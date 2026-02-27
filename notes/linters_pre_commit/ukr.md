@@ -553,7 +553,7 @@ https://docs.basedpyright.com/latest/
 
 ```toml
 [tool.basedpyright]
-typeCheckingMode = "strict"
+typeCheckingMode = "all"
 ```
 
 І такі налаштування у `pre-commit-config.yaml`:
