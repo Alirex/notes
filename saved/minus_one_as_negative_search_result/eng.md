@@ -1,4 +1,4 @@
-# Why in search used "-1" if nothing is found? Why not "None" or exception or something else?
+# Why does search return "-1" if nothing is found? Why not "None", an exception or something else?
 
 ---
 
@@ -23,10 +23,10 @@ valid index to signal "failure."
 
 If arrays started at 1 (like in Lua or older Fortran), then `0` would likely have been used as the "not found" code.
 
-### 2\. Static Typing (Why not "None"?)
+### 2. Static Typing (Why not "None"?)
 
-This convention comes from C and C++ (the "grandparents" of many modern languages). In these languages, functions are \*
-\*statically typed\*\*.
+This convention comes from C and C++ (the "grandparents" of many modern languages). In these languages, functions are
+**statically typed**.
 
 If you write a function to find a position, you must define the return type strictly as an integer (`int`).
 
