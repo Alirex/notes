@@ -19,7 +19,7 @@
 
 Додатково:
 
-- https://12factor.net/dependencies
+- <https://12factor.net/dependencies>
 
 ## Pinned versions / Закріплені версії
 
@@ -34,11 +34,11 @@
 Більше про версії:
 
 - Semantic Versioning
-  - https://semver.org/
+  - <https://semver.org/>
 - Zero Versioning
-  - https://0ver.org/
+  - <https://0ver.org/>
 - Calendar Versioning
-  - https://calver.org/
+  - <https://calver.org/>
 
 ## Pin early / Закріплюйте раніше
 
@@ -83,7 +83,7 @@
 
 Докладніше:
 
-- https://12factor.net/dev-prod-parity
+- <https://12factor.net/dev-prod-parity>
 
 ## Describe / Описуйте
 
@@ -148,11 +148,11 @@
 Наприклад:
 
 - Python
-  - https://pypi.org/
+  - <https://pypi.org/>
 - Rust
-  - https://crates.io/
+  - <https://crates.io/>
 - JavaScript
-  - https://npmjs.com/
+  - <https://npmjs.com/>
 
 Також, нерідко, можна встановлювати залежності прямо з GitHub та інших подібних місць.
 
@@ -184,10 +184,10 @@
 Додатково:
 
 - Сайт з uv
-  - https://github.com/astral-sh/uv
+  - <https://github.com/astral-sh/uv>
 - Інструменти для міграції з інших інструментів до uv
-  - https://github.com/mkniewallner/migrate-to-uv
-  - https://github.com/stvnksslr/uv-migrator
+  - <https://github.com/mkniewallner/migrate-to-uv>
+  - <https://github.com/stvnksslr/uv-migrator>
 
 ## poetry
 
@@ -195,10 +195,10 @@
 
 Додатково:
 
-- https://python-poetry.org/docs/
-- https://realpython.com/dependency-management-python-poetry/
+- <https://python-poetry.org/docs/>
+- <https://realpython.com/dependency-management-python-poetry/>
   - How to import requirements.txt into Poetry
-    - https://timonweb.com/python/how-to-import-requirementstxt-into-poetry/
+    - <https://timonweb.com/python/how-to-import-requirementstxt-into-poetry/>
     - `poetry add --group main $(cat requirements.txt | grep "#" --invert-match)`
 
 ## pip + requirements.txt
@@ -231,8 +231,8 @@
 
 Додатково:
 
-- https://pip.pypa.io/en/stable/reference/requirements-file-format/
-- https://realpython.com/what-is-pip/
+- <https://pip.pypa.io/en/stable/reference/requirements-file-format/>
+- <https://realpython.com/what-is-pip/>
 
 ## pip-tools
 
@@ -240,15 +240,15 @@
 
 Додатково:
 
-- https://github.com/jazzband/pip-tools
+- <https://github.com/jazzband/pip-tools>
 
 ## pipenv
 
 Додатково:
 
-- https://packaging.python.org/en/latest/tutorials/managing-dependencies/
-- https://pipenv.pypa.io/en/latest/
-- https://realpython.com/pipenv-guide/
+- <https://packaging.python.org/en/latest/tutorials/managing-dependencies/>
+- <https://pipenv.pypa.io/en/latest/>
+- <https://realpython.com/pipenv-guide/>
 
 ---
 
@@ -275,4 +275,4 @@
 
 Tool recommendations
 
-- https://packaging.python.org/en/latest/guides/tool-recommendations/
+- <https://packaging.python.org/en/latest/guides/tool-recommendations/>

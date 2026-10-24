@@ -1,0 +1,6 @@
+# Default rules; the ones below are off or relaxed on purpose, each with its reason.
+default: true
+MD013: false # line length: the notes are prose and prettier (proseWrap preserve) keeps a paragraph on one line
+MD025: false # a note uses several H1 sections as its parts
+MD024:
+  siblings_only: true # the same heading under different parents (an argument, then the answer to it)

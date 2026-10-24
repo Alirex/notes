@@ -10,7 +10,7 @@ Here is the breakdown of why `-1` became the standard, why it wasn't `None`, and
 
 ---
 
-### 1. Zero-Based Indexing (The Logic)
+## 1. Zero-Based Indexing (The Logic)
 
 In most programming languages (C, Java, Python, JavaScript), arrays and lists use **0-based indexing**. This means the
 first item is at index `0`, the second at `1`, and so on.
@@ -23,7 +23,7 @@ valid index to signal "failure."
 
 If arrays started at 1 (like in Lua or older Fortran), then `0` would likely have been used as the "not found" code.
 
-### 2. Static Typing (Why not "None"?)
+## 2. Static Typing (Why not "None"?)
 
 This convention comes from C and C++ (the "grandparents" of many modern languages). In these languages, functions are
 **statically typed**.
@@ -40,7 +40,7 @@ int findIndex(char target) {
 Because the computer is expecting a number, you cannot return `None` (which is an object or a different data type). You
 are forced to return a number that carries a special meaning. `-1` became that number.
 
-### 3. Performance (Why not Exceptions?)
+## 3. Performance (Why not Exceptions?)
 
 You asked why we don't raise an **Exception** (error). The answer is **speed** and **semantics**.
 
@@ -51,7 +51,7 @@ You asked why we don't raise an **Exception** (error). The answer is **speed** a
   shouldn't happen, like a crashed hard drive). Not finding an item in a search is a normal, expected outcome. It isn't
   an "error"; it's just a result.
 
-### 4. Mathematical Convenience (Bitwise Operations)
+## 4. Mathematical Convenience (Bitwise Operations)
 
 In the past, developers used a bitwise trick with the Not operator (`~`).
 The bitwise complement of `-1` is `0`.
@@ -69,7 +69,7 @@ if (~indexOf(item)) {
 
 ---
 
-### Modern Approaches: Moving away from -1
+## Modern Approaches: Moving away from -1
 
 Newer languages and paradigms are slowly fixing this because `-1` can be confusing (it looks like a magic number).
 
@@ -79,7 +79,7 @@ Newer languages and paradigms are slowly fixing this because `-1` can be confusi
 | **Union Types**       | TypeScript, Python | You can say the function returns `int \| None`. This allows returning `None` instead of -1.                             |
 | **Iterators/Find**    | JavaScript         | JS `indexOf` returns `-1`, but the newer `find()` returns `undefined` if nothing is found, which is much more readable. |
 
-### Summary
+## Summary
 
 We use `-1` because:
 

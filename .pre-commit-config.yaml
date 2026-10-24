@@ -36,3 +36,9 @@ repos:
     hooks:
       - id: prettier
         files: \.(json|ya?ml|md)$
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    # Markdown structure (rules in .markdownlint.yaml); needs Node.js on PATH.
+    rev: v0.50.0
+    hooks:
+      - id: markdownlint
