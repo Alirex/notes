@@ -1,8 +1,14 @@
-# [jet_brains_original]-[BEGIN]
-# Covers JetBrains IDEs: IntelliJ, GoLand, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
-# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
-
-# [jet_brains_original]-[END]
 # [jet_brains_custom]-[BEGIN]
+# Keep shared project settings (module, interpreter, ruff, inspections, VCS); leave out plugin state.
+# Why: notes/ignore_or_not_ide_config/ukr.md. .idea/.gitignore covers workspace.xml, shelf, data sources.
 .idea/git_toolbox_prj.xml
+.idea/copilot*.xml
 # [jet_brains_custom]-[END]
+
+# Editors and OS
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
