@@ -33,8 +33,7 @@ than no delimiter, it's often shorter than alternatives.
 **Linter-friendly**: avoids issues with special characters that some linters or languages may flag.
 
 **Preserves flat naming**: encodes hierarchical or composite structure where modules/namespaces aren’t available. Even
-with
-inheritance in classes, you often want to reflect some base name in the derived class.
+with inheritance in classes, you often want to reflect some base name in the derived class.
 
 **Avoids ambiguous merging**: prevents two parts from running together and forming misleading words.
 
