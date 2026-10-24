@@ -4,7 +4,7 @@
 
 Наприклад, для Python є pep8:
 
-https://peps.python.org/pep-0008/
+<https://peps.python.org/pep-0008/>
 
 Слідувати гарному стилю коду нам може допомогти IDE.
 Середовище розробки може візуально підказувати нам, що щось не так.
@@ -56,18 +56,18 @@ https://peps.python.org/pep-0008/
 
 Є інструмент “prek”:
 
-- https://prek.j178.dev/
-- https://github.com/j178/prek
+- <https://prek.j178.dev/>
+- <https://github.com/j178/prek>
 
 Це покращений варіант “Pre-commit”:
 
-- https://pre-commit.com/
-- https://github.com/pre-commit/pre-commit
+- <https://pre-commit.com/>
+- <https://github.com/pre-commit/pre-commit>
 
 Це дозволяє запускати інструменти, наприклад, перед тим як буде зроблений commit.
 Тут є більше варіантів:
 
-https://pre-commit.com/#supported-git-hooks
+<https://pre-commit.com/#supported-git-hooks>
 
 ## Чому prek?
 
@@ -75,15 +75,15 @@ https://pre-commit.com/#supported-git-hooks
 
 Можна просто через git:
 
-- https://git-scm.com/book/ms/v2/Customizing-Git-Git-Hooks
+- <https://git-scm.com/book/ms/v2/Customizing-Git-Git-Hooks>
 
 Але через цей інструмент може бути простіше.
 
 ## Аналоги
 
 - husky
-  - https://typicode.github.io/husky/
-  - https://github.com/typicode/husky
+  - <https://typicode.github.io/husky/>
+  - <https://github.com/typicode/husky>
   - скоріше для світу JS.
 
 ## Чому запускати локально?
@@ -108,12 +108,12 @@ Pre-commit — один із варіантів, як можна це орган
 які ви реєструєте в конфігураційному файлі.
 Наприклад, як тут:
 
-https://pre-commit.com/#2-add-a-pre-commit-configuration
+<https://pre-commit.com/#2-add-a-pre-commit-configuration>
 
 Також ви можете використовувати локальні інструменти.
 Наприклад, що встановлюються у ваше “віртуальне оточення” чи в систему.
 
-https://pre-commit.com/#repository-local-hooks
+<https://pre-commit.com/#repository-local-hooks>
 
 Ці інструменти можуть бути зроблені як на Python, так і на інших мовах.
 
@@ -225,15 +225,15 @@ exclude: |
 Наприклад, у GitHub actions:
 
 - GitHub Actions. Docs.
-  - https://docs.github.com/en/actions
+  - <https://docs.github.com/en/actions>
 - GitHub Actions. Syntax for workflows.
-  - https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#about-yaml-syntax-for-workflows
+  - <https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#about-yaml-syntax-for-workflows>
 - GitHub Actions. Some actions.
-  - https://github.com/actions
+  - <https://github.com/actions>
 
 Зокрема, можна використати дію для pre-commit:
 
-- https://github.com/pre-commit/action
+- <https://github.com/pre-commit/action>
 
 Чи адаптувати prek під цю задачу.
 
@@ -248,7 +248,7 @@ exclude: |
 
 # Editor config
 
-https://editorconfig.org/
+<https://editorconfig.org/>
 
 Суть.
 Можете створити файл `.editorconfig`.
@@ -275,23 +275,23 @@ https://editorconfig.org/
 
 Лінтер та форматер, який має в собі можливості від інших інструментів.
 
-https://docs.astral.sh/ruff/
+<https://docs.astral.sh/ruff/>
 
 Інструменти, які він може замінити:
 
 - PyUpgrade
-  - https://github.com/asottile/pyupgrade
+  - <https://github.com/asottile/pyupgrade>
   - Оновлює синтаксис коду
 - Black
-  - https://black.readthedocs.io/en/stable/
+  - <https://black.readthedocs.io/en/stable/>
   - Автоматично форматує код.
 - Flake8
-  - https://flake8.pycqa.org/
+  - <https://flake8.pycqa.org/>
   - Перевіряє деякі речі відповідно до pep8
 
 Плагін для PyCharm:
 
-- https://plugins.jetbrains.com/plugin/20574-ruff
+- <https://plugins.jetbrains.com/plugin/20574-ruff>
   - Потрібно активувати для кожного проєкту в налаштуваннях.
     Може, навіть, зберегти відповідний файл з налаштуваннями у `.idea`.
   - ![Ruff config in PyCharm ](./images/ruff_pycharm.png)
@@ -390,7 +390,7 @@ runtime-evaluated-decorators = [
 
 Адаптуйте це під свої потреби.
 
-Усі правила є тут: https://docs.astral.sh/ruff/rules/
+Усі правила є тут: <https://docs.astral.sh/ruff/rules/>
 
 Для кожного правила там є пояснення. Іноді з допоміжними статтями.
 
@@ -415,7 +415,7 @@ repos:
 
 Статичний аналізатор типів.
 
-https://mypy.readthedocs.io/
+<https://mypy.readthedocs.io/>
 
 Для Python це може бути особливо актуально.
 Вам не так часто потрібна максимальна динамічність.
@@ -435,13 +435,13 @@ uv add --dev mypy
 
 - pandas
   - pandas-stubs
-    - https://pypi.org/project/pandas-stubs/
+    - <https://pypi.org/project/pandas-stubs/>
 - scipy
   - scipy-stubs
-    - https://pypi.org/project/scipy-stubs/
+    - <https://pypi.org/project/scipy-stubs/>
 - requests
   - types-requests
-    - https://pypi.org/project/types-requests/
+    - <https://pypi.org/project/types-requests/>
 
 Їх теж можна додати як dev-залежності.
 
@@ -481,19 +481,19 @@ repos:
 ### Потенційні аналоги
 
 - ty
-  - https://docs.astral.sh/ty/
-  - https://github.com/astral-sh/ty
+  - <https://docs.astral.sh/ty/>
+  - <https://github.com/astral-sh/ty>
   - Поки що в активній розробці. Не production-ready.
   - Від astral. Автори uv та ruff.
   - Може стати цікавою альтернативою mypy у майбутньому.
 - Pyrefly
-  - https://pyrefly.org/
-  - https://github.com/facebook/pyrefly
+  - <https://pyrefly.org/>
+  - <https://github.com/facebook/pyrefly>
   - В активній розробці. Поки що може не підтримувати все, що mypy. Треба тестити.
   - Від Facebook.
 - Zuban
-  - https://github.com/zubanls/zuban
-  - https://zubanls.com/
+  - <https://github.com/zubanls/zuban>
+  - <https://zubanls.com/>
   - Потенційно цікавий варіант.
 
 ### Навіщо анотації
@@ -507,41 +507,41 @@ repos:
 Наприклад:
 
 - pydantic
-  - https://docs.pydantic.dev/latest/
+  - <https://docs.pydantic.dev/latest/>
   - Краще створення класів з валідацією полів. (`BaseModel`)
   - Декоратор для валідації функції `validate_call` (можна використати в граничних місцях).
   - Серіалізація/Десеріалізація JSON тощо.
-  - https://docs.pydantic.dev/latest/why/#dataclasses-typeddict-more
+  - <https://docs.pydantic.dev/latest/why/#dataclasses-typeddict-more>
 - typer
-  - https://typer.tiangolo.com/
+  - <https://typer.tiangolo.com/>
   - для створення консольних додатків з використанням інформації з анотацій
 - fastapi
-  - https://fastapi.tiangolo.com/
+  - <https://fastapi.tiangolo.com/>
   - для створення вебдодатків з використанням інформації з анотацій
 - django-typer
-  - https://django-typer.readthedocs.io/en/stable/
+  - <https://django-typer.readthedocs.io/en/stable/>
   - typer, але для Django.
 - django-ninja
-  - https://django-ninja.dev/
+  - <https://django-ninja.dev/>
   - як FastAPI, але для Django.
-  - https://eadwincode.github.io/django-ninja-extra/
+  - <https://eadwincode.github.io/django-ninja-extra/>
 
 І т. ін.
 
 Додатково:
 
 - type concepts
-  - https://docs.basedpyright.com/latest/getting_started/type-concepts/
+  - <https://docs.basedpyright.com/latest/getting_started/type-concepts/>
 
 ## BasedPyright
 
 Це дещо перероблений pyright. З різними покращеннями. Особливо щодо перевірки типів.
 
-https://docs.basedpyright.com/latest/
+<https://docs.basedpyright.com/latest/>
 
 Інтеграція з IDE:
 
-- https://docs.basedpyright.com/latest/installation/ides/
+- <https://docs.basedpyright.com/latest/installation/ides/>
 
 Я дізнався про цей лінтер з IDE [Zed](https://zed.dev/). Там воно використовується за замовчуванням.
 
@@ -576,7 +576,7 @@ repos:
 
 Інструмент, який може пропонувати покращення коду. Корисний для рефакторингу.
 
-https://sourcery.ai/
+<https://sourcery.ai/>
 
 На жаль, комерційний. Тож не всім доступний. І при цьому не критичний для придбання.
 Враховуйте це, якщо плануєте його додавати.
@@ -616,11 +616,11 @@ repos:
 
 У ньому є багато перевірок. (Але можуть бути складнощі із запуском і налаштуванням.)
 
-https://megalinter.io/latest/
+<https://megalinter.io/latest/>
 
 У ньому може бути прям дуже багато інструментів:
 
-https://megalinter.io/latest/supported-linters/
+<https://megalinter.io/latest/supported-linters/>
 
 Але деякі інструменти краще працюють і налаштовуються при використанні як окремий інструмент.
 
@@ -634,7 +634,7 @@ https://megalinter.io/latest/supported-linters/
 
 Різні корисні дії.
 
-https://github.com/pre-commit/pre-commit-hooks
+<https://github.com/pre-commit/pre-commit-hooks>
 
 Наприклад:
 
@@ -666,7 +666,7 @@ repos:
 
 Автооновлення версій інших хуків.
 
-https://pypi.org/project/pre-commit-update/
+<https://pypi.org/project/pre-commit-update/>
 
 ```yaml
 repos:
@@ -681,7 +681,7 @@ repos:
 
 Різні дії пов'язані з uv.
 
-https://github.com/astral-sh/uv-pre-commit
+<https://github.com/astral-sh/uv-pre-commit>
 
 Наприклад:
 
@@ -697,9 +697,9 @@ repos:
 
 Форматер для різних текстових файлів.
 
-https://prettier.io/
+<https://prettier.io/>
 
-https://github.com/JoC0de/pre-commit-prettier
+<https://github.com/JoC0de/pre-commit-prettier>
 
 Наприклад:
 
