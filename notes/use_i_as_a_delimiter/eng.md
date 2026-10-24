@@ -13,8 +13,6 @@ It looks like a simple line ("|"), making it unobtrusive yet noticeable.
 It works in similar ways both in `PascalCase` and `snake_case`, making it versatile across naming conventions.
 It is also compatible with file names, environment variables, and other contexts where names are used.
 
-
-
 This can enhance the readability and maintainability of code,
 especially in complex names where traditional delimiters
 like underscores or hyphens might be less effective.
@@ -26,7 +24,6 @@ like underscores or hyphens might be less effective.
 ## General
 
 **Visual separator**: gives a quick, minimal boundary inside long names. It's easy to spot when scanning code.
-
 
 **Language-agnostic marker**: works across languages/contexts that differ in their allowed separators.
 
@@ -57,6 +54,4 @@ names.
 **Reduced key collisions**: consistent delimiter reduces accidental identical names when composing parts
 programmatically. For example, with cookiecutter templates or codegen tools.
 
-
 ---
-

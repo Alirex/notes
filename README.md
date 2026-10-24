@@ -2,6 +2,19 @@
 
 Different notes
 
+| Note                                                                             | Language |
+| -------------------------------------------------------------------------------- | -------- |
+| [Dependencies](notes/dependencies/ukr.md)                                        | ukr      |
+| [Ignore or keep IDE settings in the repo](notes/ignore_or_not_ide_config/ukr.md) | ukr      |
+| [Code style, linters, formatters, pre-commit](notes/linters_pre_commit/ukr.md)   | ukr      |
+| [Use "i" as a delimiter](notes/use_i_as_a_delimiter/eng.md)                      | eng      |
+
+Saved answers:
+
+| Note                                                                           | Language |
+| ------------------------------------------------------------------------------ | -------- |
+| [Why "-1" means "not found"](saved/minus_one_as_negative_search_result/eng.md) | eng      |
+
 ---
 
 ## Dev
