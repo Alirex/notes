@@ -1,9 +1,17 @@
-# [jet_brains_custom]-[BEGIN]
-# Keep shared project settings (module, interpreter, ruff, inspections, VCS); leave out plugin state.
-# Why: notes/ignore_or_not_ide_config/ukr.md. .idea/.gitignore covers workspace.xml, shelf, data sources.
-.idea/git_toolbox_prj.xml
-.idea/copilot*.xml
-# [jet_brains_custom]-[END]
+# JetBrains: ignore all, then keep the shared files (module, interpreter, ruff, inspections, VCS).
+# Why: notes/ignore_or_not_ide_config/ukr.md; list: HQ practices/gitignore-and-ide.md.
+.idea/**
+!.idea/*.iml
+!.idea/modules.xml
+!.idea/misc.xml
+!.idea/vcs.xml
+!.idea/ruff.xml
+!.idea/codeStyles/
+!.idea/codeStyles/**
+!.idea/runConfigurations/
+!.idea/runConfigurations/**
+!.idea/inspectionProfiles/
+!.idea/inspectionProfiles/Project_Default.xml
 
 # Editors and OS
 .vscode/

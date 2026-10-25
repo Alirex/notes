@@ -23,7 +23,7 @@ repos:
         # Checks that all JSON files are parseable.
       - id: check-added-large-files
         # Prevent giant files from being committed.
-        args: [--maxkb=500]
+        args: [--maxkb=1024]
 
   - repo: https://gitlab.com/vojko.pribudic.foss/pre-commit-update
     # https://pypi.org/project/pre-commit-update/
@@ -42,3 +42,5 @@ repos:
     rev: v0.50.0
     hooks:
       - id: markdownlint
+        # CLAUDE.md is a single `@AGENTS.md` import line for Claude Code, not a document (MD041 wants a heading).
+        exclude: ^CLAUDE\.md$
