@@ -21,38 +21,36 @@ Saved answers:
 
 ### Install prek for pre-commit hooks
 
-Needed for automatic linting.
+Needed for automatic linting. Once per machine, either as a [uv](https://docs.astral.sh/uv/) tool:
 
 ```shell
-if ! command -v prek &> /dev/null; then
-    curl --proto '=https' --tlsv1.2 -LsSf https://github.com/j178/prek/releases/download/v0.2.19/prek-installer.sh | sh &&\
-    prek self update
-else
-    prek self update
-fi
+uv tool install prek
+```
 
+or with the installer of the latest release:
+
+```shell
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/j178/prek/releases/latest/download/prek-installer.sh | sh
 prek --version
 ```
 
-Note: Run with self-update for installing the latest version of prek. Maybe they will provide a better script later.
+Later, `uv tool upgrade prek` or `prek self update` brings it up to date.
 
 ### Register pre-commit hooks
 
-Make this after cloning the repository.
+Once per clone, after cloning the repository:
 
 ```shell
 prek install
 ```
 
-or, if you have pre-commit hooks installed before prek:
+or, if the clone already has pre-commit hooks from `pre-commit`:
 
 ```shell
 prek install --overwrite
 ```
 
-Make this each time after cloning the repository.
-
-Don't need to do it after changing the hooks, commit or pull.
+No need to repeat it after changing the hooks, a commit or a pull.
 
 ### Run pre-commit hooks
 
