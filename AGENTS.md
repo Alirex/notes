@@ -19,3 +19,5 @@ General practices live in HQ: [evocaslab/hq `practices/`](https://github.com/evo
   [HQ lint-strictness](https://github.com/evocaslab/hq/blob/main/practices/lint-strictness.md).
 - A new note gets a row in the README index (`notes/<slug>/<lang>.md`, `ukr` or `eng`).
 - Commits are Conventional Commits (`docs:` for notes, `chore:` for tooling), lowercase subject.
+- `docs/hq-practices/` is a generated copy of the HQ practices that apply here (`just practices-sync notes` in HQ). Never
+  edit it; change the page in HQ and sync again. Prettier skips it.

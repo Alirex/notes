@@ -36,6 +36,8 @@ repos:
     hooks:
       - id: prettier
         files: \.(json|ya?ml|md)$
+        # docs/hq-practices is a generated copy (hash-checked by `just practices-status` in HQ); formatting would change it.
+        exclude: ^docs/hq-practices/
 
   - repo: https://github.com/gitleaks/gitleaks
     # Secret scanning of the staged changes on every commit (prek builds the Go binary itself).

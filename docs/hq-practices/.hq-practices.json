@@ -1,0 +1,79 @@
+{
+  "source": "evocaslab/hq",
+  "commit": "2b99e6aff90d40efe9ace93acccbdb9bb96dbf84",
+  "audience": "Alirex/notes",
+  "pages": {
+    "agent-instructions.md": {
+      "source": "1398dde088eee2ee1612454b9478b48c2423b52f11b17c634adaee942b7e030c",
+      "file": "9baf20a8b42059d22fa7cf7dba00b66c9bb63e1076b388aa969a5a519332ad88"
+    },
+    "agent-security.md": {
+      "source": "15820331fa4bb89712d4be54108d969cde51e707d4612c5553f2ff4fbfb4fb49",
+      "file": "e8476ab01bba7bdc43235a8ad40198c552c7e6c12bd0d0e3961f485cd19235ae"
+    },
+    "architecture-diagrams.md": {
+      "source": "6150511f2d0b0516061360105e728226db5aa40958aa06a1fccd495609dd0164",
+      "file": "b244ca3ec1d721180cd33af954fd623cfa2e5f99a93f40483d0de25dcc18a445"
+    },
+    "autonomous-sessions.md": {
+      "source": "001720ee237a050109950e13da89cf6ab59e32c1e4994a8d69c955ca8302e73a",
+      "file": "d37f5c81a5dc63627a8f5f9601c0a93c291ed77dbced5c3cb5079cb347d75013"
+    },
+    "change-discipline.md": {
+      "source": "d27be69ead1e040ea57648ac4ae47572e42b7bbec162f8551d686d2fc48cf9cf",
+      "file": "8907ade241c617d6b376ead633c4388beba3fb87d24543dc6deea3a20474883c"
+    },
+    "docs-backlog-changelog.md": {
+      "source": "2ea1e65468acd7fdecb54b90cc5f587b304b7d074b6c4e15d5898deefebd5536",
+      "file": "09de972b8202100df9e00862a80a6f84528b5896cfe7383df79e65c0403afbe2"
+    },
+    "git-worktrees-and-autoland.md": {
+      "source": "0c0524946fff3450e7b47569b53982c36ac520c31ab94edab5abf0e7734b82ad",
+      "file": "740c1b18b33e8f91737986e2366e9ce717e204f7064d973ba0560c4794fa9e07"
+    },
+    "gitignore-and-ide.md": {
+      "source": "9aafa1d741a92e6fd2a8a10f48682caf819c1eaadeb84357eea94ab8d1efcee6",
+      "file": "e276c1d6afcd99ebbd44533fd036239bd9fc1177cf5e0ec1e6ef8b3be71c10c7"
+    },
+    "just-task-runner.md": {
+      "source": "02442be68ce9685fcd9a6d15c343a1a49a4688711bf9cd5d7417907800711b76",
+      "file": "48f7c2f52c1304fececd05b3fbf68e15a8e1a2ee353fd01447a3e5111602bd86"
+    },
+    "lint-strictness.md": {
+      "source": "d37731dced6ce34a61e0504801c15662a67ecdf975e5f031276204c72dd4aee8",
+      "file": "2d9d4ea28b23f02db1517f2a4db6e2bda97a97ba91999ab0b7ec245cf4d834b4"
+    },
+    "llm-usage-guards.md": {
+      "source": "9fd08b483ce92e5f8074ad3caac0ed3e1249aeef2107a35e54bea30386550840",
+      "file": "322a29f2a2daa75d1e2473e8b9a7373dcb0d50e941a8b68fbbb04c641c0a03ee"
+    },
+    "maintainer-questions.md": {
+      "source": "4f5408a464e0bdd9d0bb7958eb6adf2f7a711ec120959115d8ec541004648c1e",
+      "file": "09d0daadf02b596fecf40571d2eff82c16739987ce93ded49d3f9fab81e3afc3"
+    },
+    "quality-gate.md": {
+      "source": "f0d544356da08ef30516ac28f0cb03ef320aff5d1da6ce19c48197b0cbe56eb8",
+      "file": "1d488713c4dd48bc53826e58ef8f69cf46b8c501103d623f0c8ea59388c8f461"
+    },
+    "releases-and-versions.md": {
+      "source": "71625b410a933228c8d4c9aafd308656ee499ee39446e9cff0ef4276fc06436c",
+      "file": "c1284045f05a4526a11909570b84513bc6d10b304f1d6d44b1b17c8fea7692a6"
+    },
+    "subagents-and-context.md": {
+      "source": "a3a0c0d34d5e2b7858a06a1d9801d2c1d7ccf116b92a1514bd8f18af7a2cab81",
+      "file": "8714939ebeff9f16639702a877bb0edecb1357b31582475493c9686288bbe78f"
+    },
+    "supply-chain-security.md": {
+      "source": "f7b62db35a96b27de2cb7d81aea895789bd5bb33319739a280d8882e741932c9",
+      "file": "30fce63c44efd84b5304a5dd4955e6a682734817a8bb52f3c832b024f456aa97"
+    },
+    "testing.md": {
+      "source": "409e1f54a51e2fe39d6833fd503115ccb518095acca7209be45e75e8445112a7",
+      "file": "d8e7b35728618fc233aea3c331d02bcc1a929658be86479a69ad317ea4cf82c2"
+    },
+    "tooling-and-deps.md": {
+      "source": "05faabe4afa343294e09d511816023aa76263683764246de3aa39ba1514c7462",
+      "file": "ff5d62cfe4cc37910319ff9bf5b0ae5b1b9f4ea140d3f7d6c2cc7a8a901d7e44"
+    }
+  }
+}
