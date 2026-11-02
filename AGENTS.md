@@ -8,6 +8,10 @@ General practices live in HQ: [evocaslab/hq `practices/`](https://github.com/evo
 
 ## Rules
 
+- To find HQ practices or backlog items, call the `hq` MCP tools first (`practices_for`, `practices_get`,
+  `practices_search`, `backlog_list`, `backlog_get`; load them with ToolSearch `hq`); fall back to the HQ checkout's
+  files and `just` when the server is not connected.
+  [Reasoning](https://github.com/evocaslab/hq/blob/main/practices/agent-instructions.md#use-the-mcp-for-practices-and-tasks).
 - Never edit on `main`: `git fetch origin && git worktree add -b <type>/<short> .worktrees/<short> origin/main`
   (`docs/`, `chore/`, `fix/`). Push every commit right away; land when the hooks pass: merge `origin/main` into the
   branch, merge into `main` in the primary checkout, push, remove the worktree. Read-only questions need no branch.
