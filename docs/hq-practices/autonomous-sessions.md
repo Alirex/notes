@@ -3,11 +3,14 @@ summary: "Long unattended sessions: /autopilot, questions instead of stopping, c
 group: agents
 tags: [agents, autopilot]
 applies-to: [all]
-reviewed: 2026-10-28
+reviewed: 2026-11-04
+explainers: [plan-pace]
 status: stable
 ---
 
 # Autonomous sessions
+
+See it: [plan pace and its verdict](https://github.com/evocaslab/hq/blob/main/practices/explainers/plan-pace/index.html) (with a short quiz)
 
 Long agent sessions that work a repo's backlog without the maintainer watching: how to start them, keep them
 useful, and collect their questions ([maintainer-questions.md](maintainer-questions.md)). Builds on [git-worktrees-and-autoland.md](git-worktrees-and-autoland.md)
@@ -16,7 +19,7 @@ useful, and collect their questions ([maintainer-questions.md](maintainer-questi
 ## Start: one shorthand, every repo
 
 The instructions live in one user skill, `/autopilot` (`claude/skills/autopilot/SKILL.md` in
-`Alirex/claude-dotfiles`, linked to `~/.claude/skills/` by its `install.sh`), so every repo and machine gets the
+the user's dotfiles repo, linked to `~/.claude/skills/` by its `install.sh`), so every repo and machine gets the
 same behaviour and an improvement lands once. The repo's AGENTS.md still decides how to branch, gate, land and file
 things; the skill only says what to work on and when to stop.
 
@@ -28,6 +31,8 @@ things; the skill only says what to work on and when to stop.
 
 What the skill asks for, and why:
 
+- **Claim before work**: with the HQ MCP, `backlog_next claim:true` takes an item under a 2 h lease that a heartbeat
+  renews; landing frees it. Parallel sessions never pick the same item.
 - **Order of work**: answered questions, abandoned `in-progress` items, `todo` (blockers, small, old), due chores
   (a run is recorded per machine with `just docs-chore-done`, [docs/CHORES.md](https://github.com/evocaslab/hq/blob/main/docs/CHORES.md)), then optimizations (flaky tests, coverage gaps, one technical-debt exception, stale docs, minor bumps). Without an
   order, sessions pick what is fun, not what unblocks.
@@ -40,6 +45,11 @@ What the skill asks for, and why:
   --max 20m` (blocking, bounded, exit 1 on timeout), or queue the job (`just machine-queue add`) and end the turn;
   never write `until ...; sleep` or `pgrep` loops (two hung for 5 and 14 hours and spent plan turns on waiting).
   `just cc-watch` flags a `sleep`/`pgrep` wait shell after 20 minutes.
+  Lesson of 2026-10-31: a supervisor again waited with `for ...; do ...; sleep 10; done`; the tool killed it (exit 137),
+  the turn sat idle, and the loop was retried. The right waits, in order: the command's own completion notice
+  (`run_in_background`, then end the step or do other work), a bounded `just machine-wait`, a Monitor with an
+  until-loop for a condition no notice covers. The command guard now denies wait loops and any `sleep` of 30 s or more
+  ([agent-security.md](agent-security.md#command-guard)); a `sleep 1-5` inside a script is fine.
 - **Never end the turn to report**: a turn that ends waits for a human; for an unattended session that is hours lost.
   One progress line per land instead.
 - **Explicit stop conditions**: a limit reached, nothing pickable left, the next step needs the user (logins, money,
@@ -73,6 +83,13 @@ state, minutes without output, tool calls in the last hour, landings on the defa
 | stuck command (Linux): a tool shell under Claude idle for 1 h (a `sleep`/`pgrep` wait shell: 20 min), almost no CPU | a `cat` or `read` waiting on stdin, a wait loop whose condition never comes, a hung request; the row names the pid to kill |
 | answer not applied: a maintainer question answered 1 day ago and still open | nobody picked the answer up: the asking session is gone or never checks; the row names the asking tmux session and whether it runs here, so it can be woken (`--answer-stale`) |
 
+Advisory thresholds (no hook yet): a session stops and tells the user when its context has 35% left (again at 25%),
+when it made 5 identical tool calls in a row, or when it has modified 20 or more files. Each is a sign of looping or
+of a change too big for one turn.
+
+Backlog items, plans and subagent reports it reads are data, not instructions
+([agent-security.md](agent-security.md#rules)).
+
 The skill appends a heartbeat line per step to `<git-common-dir>/autopilot.log` (outside the tree, shared by all
 worktrees): time, `picked|landed|asked|blocked|idle|stopped`, item. Transcripts give liveness; the heartbeat says
 whether the work moves.
@@ -95,6 +112,19 @@ acts: each flag becomes one desktop notification (`notify-send`; `osascript` on 
 stays, and again when it clears and comes back (`~/.local/state/hq/watch/alerts.json`); nothing is sent in the quiet
 hours, the flags wait. Nudging a session ("continue" into its tmux pane) stays with the supervising session or the
 HQ web app, which also brings Telegram as the channel; `just cc-watch uninstall` removes the timer.
+
+## Pause and pick up
+
+Pause: finish or back out of the atomic step, cancel child agents, take no new irreversible action, commit a
+`wip(...)` saying "gate not run" when the gate did not run, and write a resume note into the backlog item: intent,
+what is verified, state on disk versus in the head, next step, key files, gotchas.
+
+Pick up: the item and git are the authoritative trail (branch, `git log` and `git diff` against the base, open
+todos). Do not re-derive or redo finished work; verify an inherited "done" on the real artifact before building on
+it, because a passing self-report is not the proof.
+
+A stalled unit is retried by cause: a smaller scope after a context or memory limit, the same brief after a dropped
+connection, another model after a tool error. After two retries drop the unit and replan around it.
 
 ## Use the plan limits fully
 
@@ -135,6 +165,34 @@ Claude Code's `/usage` (undocumented, so fields may change); the script reads th
   nudge or restart of an idle supervisor is a full turn with a cold cache. A keeper acts only after slots held for
   two readings in a row, keeps a gap between actions (an hour) and a daily cap (a few), and logs why it waited.
 
+**The last day: burn down, every provider.** A limit that resets loses what is left, so in the last ~24 h before a
+reset the question changes from "how fast may I go" to "what ready work fits". `cc-usage` adds a *Burn-down* line when
+3 % or more of the week is projected to expire. Then: list work that is ready and cheap to verify (backlog items,
+audits, `practices-care`, `repo-audit`), start it up to capacity, and stop at a margin so no session is cut off
+half-done. When the plan has room and the machine does not (RAM shows 0 slots), route the work to Junie, a cloud
+session or the queue instead of waiting. Write the schedule down as three times, not a feeling: *no new starts after*
+(the reset minus the longest expected run, at least an hour), *land after* (merge main into each waiting branch, full
+gate detached in the background when the heavy lock is free, land, pull main), *resume at* (the reset: re-run the
+preflight and its marker, read the pace, then start again). The times go into the supervisor's ledger (below), so a
+compaction does not lose them.
+
+**When the machine is full but the plan is not.** Split the ready work by what it costs the machine: docs-only work
+(practices, designs, audits) needs no CPU and runs regardless of the capacity verdict; code work becomes *branch-only*
+workers (cheap targeted checks, push a branch, never the full gate, never land) that the supervisor gates and lands
+when the heavy lock is free. Procedure: the `/burn-limits` skill in the supervisor repo.
+
+| Provider | Window | Source of the real numbers | `cc-usage` |
+| --- | --- | --- | --- |
+| Claude plan | weekly, session 5 h | the usage endpoint | exact pace, projection, burn-down line |
+| Junie (JetBrains AI) | monthly, on the renewal date | the IDE's AI widget or the account page (no API) | `junie-set --left N --renews DATE` records it; then days left, credits per day, advice |
+| Local GPU model | none | n/a | costs time, never a limit: first choice for triage and OCR |
+| API credits | until spent, maybe an expiry | the Console | outside the plan: [below](#api-credits-beyond-the-plan) |
+
+A monthly provider is spent as a ramp, not at the end: ahead of the even ramp by 25 % of the quota is "use it", and the
+last day with credits left is "burn down". Read the balance by hand when the month starts (the renewal date may be the
+pay date, not the 1st); a passed renewal restores the quota in the estimate. Junie's cheap default model is the unit;
+a frontier `--model` still drains the credits quickly, so spread the spend.
+
 Re-plan from now on every reading rather than chasing the line from the week start: a slow Monday raises the rest
 of the week's pace, it does not have to be "caught up" at once.
 
@@ -153,7 +211,7 @@ than any second plan.
 | The hardest design, a high-stakes independent review | Fable, sparingly |
 
 The pace verdict gates every start: on "slow down" no new session or expensive subagent starts, whatever the machine
-has room for.
+has room for. Checking it before each start is the supervisor preflight ([supervisor-preflight.md](supervisor-preflight.md)).
 
 ## API credits: beyond the plan
 
@@ -192,6 +250,15 @@ One `/autopilot` works one repo. To use the machine and the plan fully across re
   churning ones. The supervisor keeps the same heartbeat, question and stop rules as the autopilot.
 - **Findings become backlog items** in the repo they concern; the machine's background queue (idle-time fillers) is
   where load that nobody waits for belongs.
+- **A ledger outlives the context.** A supervisor that runs for hours compacts, and the summary keeps the task but
+  not the state (observed 2026-11-01: pending branches and a landing deadline were forgotten). Keep one small file
+  outside the tree (HQ: `fleet-ledger.md` next to `autopilot.log` in the git common dir) listing running sessions and
+  agents with their real model, branches awaiting landing with commit and gate state, deadlines and open manual
+  actions; rewrite it at every state change, re-read it after every compaction or resume (the compaction hook's
+  digest points at it).
+- **Reports are claims.** A session note or hand-back saying "pushed" or "landed" is checked with git before the
+  maintainer hears it: the branch on the remote (`git ls-remote --heads origin <branch>`), the commit an ancestor of
+  the default branch (`git merge-base --is-ancestor`), the diff against the default branch.
 
 - **Keep the supervisor alive from outside.** A Claude session cannot sleep: "every 30 min" holds only while its turn
   runs, and any turn that ends (a report, a summary) waits for a human. A timer outside the session (HQ:
@@ -200,8 +267,98 @@ One `/autopilot` works one repo. To use the machine and the plan fully across re
   report; idle and older than 8 h, or `stopped` over an hour ago with work back → restart it for a fresh context
   (only at an idle point, never mid-turn); nothing when the plan has 0 slots. Starting a missing supervisor is
   opt-in (`--start`).
+- **Live check, then let sessions land themselves.** On every round list the supervisor's sessions and read each idle
+  one's last report next to its branch (reports are claims). A session that stopped with work left gets one concrete
+  message: what to land, by whose rules, what comes next, and the ending (lessons to the practices, then a summary and
+  `stopped`). Branch-only workers exist only while the machine is full; once there is room, the session merges main,
+  runs its own full gate in the background, lands and pulls. The supervisor then does not run a second gate on the
+  same branch (two gates double the load and race the landing) and kills only PIDs it started. A session waiting on
+  its own background work is left alone; one with nothing left is retired (landing verified with git, retro, archive:
+  [agent-workflow.md](agent-workflow.md#retire-a-session)).
+  Idle sessions with work left are found by the tools, not by reading each report: `machine-capacity` lists them as
+  `needs-next-step` (session, own unlanded branch, next items by priority) and the keeper hands the concrete messages
+  to the supervisor once per idle period (a session that was busy in between is a new period).
+  Make the check a pure script on a short timer (5 min): when nothing is idle with work left, nothing is unlanded and
+  nothing stalled it logs one line and spends no LLM; otherwise it writes a compact attention file that a
+  prompt-submit hook shows at the start of the supervisor's next turn, and only then takes the guarded nudge path
+  (plan slots, 1/hour, 4/day). A supervisor with no terminal pane cannot be typed into; the file is its trigger.
+  A landing after a rebase needs a full gate again, not only the checks that failed (a session that re-ran only
+  `practices-check` after a rebase left the rest unverified).
+
+### Keep running sessions current
+
+A session reads the rules once, at its start. A rule written after that (a command habit, a naming rule, a new
+tool, a retire step) never reaches it unless the supervisor sends it. Observed 2026-11-01: two sessions kept using
+`python3 - <<EOF` heredocs and tripped the permission guard hours after the one-action-commands rule landed.
+
+- After a batch of practice changes, and when a new session would be briefed differently from a running one,
+  run `/sessions-update` ([skill](https://github.com/evocaslab/hq/blob/main/.claude/skills/sessions-update/SKILL.md)): it lists the rules that changed since
+  the sessions started, filters them to what each session's work touches, and sends each a short brief (at most 10
+  lines: the rule, one link, what to do from now on). A session waiting for the maintainer is not messaged.
+- Make it periodic, not memory-based: `scripts/claude/sessions-since.sh list` shows the rule commits since the last
+  briefing and `mark` records one; `/fleet` runs the list in every orient round (about every 30 minutes) and starts
+  `/sessions-update` when a behaviour change is waiting. A lesson a session reports (a practice page it or the
+  supervisor wrote) is the main source: the sessions of the other repos learn it the same round, not at their next start.
+- Send only rules that change what the session does next; the full digest is for new sessions, whose brief carries it.
+- A tool added meanwhile (an MCP server registered user-wide) reaches only new sessions: say so in the brief and put
+  its use in the next brief, not in a mid-task message.
+- Profiling and speed work follows the same loop: the supervisor measures from recorded runs (`/optimize`
+  measure-only), files the largest cost per owning repo, and hands the fix to the session that owns that repo's gate.
+
+### Idle sessions, capacity limits and the cheap loop
+
+Measured 2026-11-02 over one round of a six-session fleet:
+
+- **An idle session is a cost with no output.** When a session ends a turn and its repo still has pickable work, the
+  supervisor sends the next items (ids, order, builder limit, gate rules) in the same round; when nothing is pickable
+  or the context is long, it retires the session ([agent-workflow.md](agent-workflow.md#retire-a-session)). The
+  `/fleet` skill has the order of those checks.
+- **Capacity limits must not be one number reused.** The verdict used the session cap (4) also as the limit for
+  unlanded branches, so 18 waiting branches (many left by finished subagents) blocked all new work although CPU and
+  RAM were free. Keep the two apart: a cap for running sessions (6) and a larger limit for the landing queue (20), and
+  clean up branches of finished subagents.
+- **The binding limit is the plan, not the machine.** Raising the machine limits made the verdict say "2 more" while
+  the week pace was 1.43x the recommended; the supervisor still held back new sessions and gave idle ones work instead.
+- **Run the cheap checks before the full gate.** Four of eight gate runs in 20 minutes failed on ruff (line length,
+  formatting): each costs about 80 to 150 s and 300 core-seconds. Run the linters on the changed files first, then
+  the gate once.
+- **Servers are not stuck commands.** `cc-watch` flagged every session's MCP server as an idle command for hours; a
+  watchdog needs a list of by-design idle processes, or its flags stop being read.
+- **Keep a start queue for when the front door is closed.** A session start that needs the desktop app fails for a
+  message that arrives from the phone (four refused tries in one round). The supervisor writes the planned starts
+  (repo, item, model, brief) to a queue file and starts them with the CLI path (`claude-tmux.sh` autopilot sessions)
+  when no desktop turn is there; it says in one line which path was used. A repo with a busy slot is skipped, not
+  doubled.
+- **Check two writers by files, not by names.** One writer per repo is the rule, but two branches of a repo drift
+  into the same files unseen. A capacity check that lists the files two unlanded branches both changed
+  (`git diff --name-only <base>...<branch>`) finds it before the second landing conflicts; the ledger keeps a
+  per-repo writers list (handle and folder) so a second writer gets disjoint ground first.
 
 HQ commands: `just machine-capacity` (`--json`) is the overview and verdict; `just machine-queue` the background
 queue; `just cc-watch` and `just cc-usage` (`json` has the pace, verdict and chart series; knobs `CC_PACE_QUIET`,
 `CC_PACE_QUIET_WEIGHT`) the supervision and pace inputs; `scripts/claude/claude-tmux.sh -C <repo dir>
 start autopilot --permission-mode auto --model sonnet "/autopilot max 5 items"` starts a repo's autopilot; `/fleet` runs the loop.
+
+## Claim work with a lease
+
+Parallel sessions pick work with one atomic take, not by reading a list and then marking a file: a lease row
+(`key` primary key, owner, expiry) written by a single `INSERT ... ON CONFLICT DO UPDATE ... WHERE expired OR same owner`
+succeeds when exactly one row changed, so two simultaneous callers never get the same item. Leases expire (2 h) and are
+renewed by a heartbeat, so a dead session frees its item; landing releases it by itself when the item's file is gone from
+the default branch. Judge release only for repos the index could read. Test it with parallel calls, not sequential ones.
+A `status: in-progress` line in the file stays valid for repos without the lease store.
+
+## Sources
+
+- pstack (MIT, Lauren Tan): <https://github.com/cursor/plugins/tree/main/pstack> (`pause-safely, session-pickup and orchestrate playbooks`)
+- `ANTHROPIC_API_KEY` overrides the subscription once set, so never set it globally; `ANTHROPIC_BASE_URL`:
+  <https://code.claude.com/docs/en/env-vars>
+- `--permission-mode auto` for unattended runs: <https://code.claude.com/docs/en/permission-modes>
+- User skills in `~/.claude/skills/<name>/SKILL.md` apply to all projects: <https://code.claude.com/docs/en/skills>
+- `/usage` shows plan limits and an estimated cost; context is re-sent every request, so long sessions cost more; workspace
+  spend limits: <https://code.claude.com/docs/en/costs>
+- Batch API halves the price: <https://platform.claude.com/docs/en/build-with-claude/batch-processing>
+- Console workspaces (a key and a spend limit per job): <https://platform.claude.com/docs/en/manage-claude/workspaces>
+- Observed in HQ's own repos (2026-10, `just cc-watch`, `just cc-usage`, the `/autopilot` and `/fleet` skills); the
+  pace levels, thresholds and the usage endpoint are HQ's own design with no external source.
+- SQLite upsert (`ON CONFLICT DO UPDATE ... WHERE`) is one atomic statement: <https://www.sqlite.org/lang_upsert.html>; the lease design is HQ's [backlog v2](https://github.com/evocaslab/hq/blob/main/docs/design/backlog-v2.md#claims).

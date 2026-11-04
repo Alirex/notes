@@ -3,14 +3,11 @@ summary: "What .gitignore lists and which JetBrains .idea files to commit"
 group: quality
 tags: [git, ide]
 applies-to: [all]
-reviewed: 2026-10-24
+reviewed: 2026-11-01
 status: stable
 ---
 
 # .gitignore and IDE settings
-
-The maintainer's longer reasoning on IDE settings (in Ukrainian): [Alirex/notes:
-ignore_or_not_ide_config](https://github.com/Alirex/notes/blob/main/notes/ignore_or_not_ide_config/ukr.md).
 
 ## .gitignore
 
@@ -65,3 +62,15 @@ layout and plugins, with less to set up again by hand. Ignore all, then allow th
 - Commit the settings early, on the default branch: switching to a branch without them confuses the IDE.
 - Read every `.idea` file before its first commit: plugins can store tokens or absolute paths.
 - Pre-commit hooks exclude `\.idea/.*`: the IDE owns the formatting of those files.
+
+## Sources
+
+- `!` negation, no re-including a file under an excluded directory, per-directory `.gitignore`:
+  <https://git-scm.com/docs/gitignore>
+- `git check-ignore --no-index --stdin -v -n`: <https://git-scm.com/docs/git-check-ignore>
+- The full GitHub Python template carries Django, Flask, Scrapy and Celery sections and broad `lib/`, `var/`, `parts/`
+  lines: <https://github.com/github/gitignore/blob/main/Python.gitignore>
+- GitHub's JetBrains template ignores `workspace.xml`, `shelf`, `dataSources/` and `httpRequests`:
+  <https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore>
+- Observed in the maintainer's own repos (the selective `.idea/` allow-list and the keep/leave-out tables); the
+  JetBrains documentation page fetched did not cover them, so there is no external source for those choices.

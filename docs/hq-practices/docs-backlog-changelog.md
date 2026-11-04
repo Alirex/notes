@@ -36,7 +36,7 @@ docs/
   <topic>/…                 durable topic docs (architecture, API, ops)
 ```
 
-Example: `auto-joint-lab/report-bot/docs/`. HQ uses the same system for its own
+Example: a managed product repo's `docs/` folder. HQ uses the same system for its own
 work (`docs/backlog/README.md`, `docs/CHORES.md`, `scripts/docs/backlog.py`),
 without a changelog: git history is the record there.
 
@@ -50,6 +50,14 @@ without a changelog: git history is the record there.
   it: logins, purchases) and, for findings about another repo, `area: review` with
   `repo: <owner>/<repo>`. The body is the request in the
   maintainer's words, then a `## Progress` section (branches, done, left).
+- **Priority is a number, not a word.** Optional `priority: <integer>` (absent: 0; higher first, below zero after the
+  normal work), with named bands derived from fixed ranges (urgent 30+, high 10-29, normal -9..9, low -29..-10, someday
+  below), optional `due:` and `depends_on:` (the check fails on an unknown id and on a cycle), and a tie-break score
+  inside one priority. Three words give three buckets and no order inside one; the HQ rule and its shared test table:
+  [backlog-priority design](https://github.com/evocaslab/hq/blob/main/docs/design/backlog-priority.md). A small repo ports the rule without the score:
+  `parse_priority`, `band_of`, word rejection, `--migrate-priority` and the dependency check, tested against a copy of
+  `backlog-priority-cases.json` (typed with pydantic models; the tests import `scripts/docs` through pytest
+  `pythonpath` and basedpyright/ty extra paths, not through `importlib`, which breaks strict typing).
 - **Statuses:** `idea` (worth doing, not planned), `todo` (ready to pick),
   `design` (needs a design doc or answers), `in-progress` (a branch is on it),
   `review` (waiting for the maintainer), `blocked` (waiting on something
@@ -95,7 +103,7 @@ without a changelog: git history is the record there.
   upgrades | weekly | upgrade skill"). Chores are not backlog: never "done".
 - When an agent runs one, it notes the date and outcome in the branch's
   changelog entry. Idle agents take a due chore.
-- Tracking the last run (built in `report-bot`, `scripts/docs/chores.py`): the
+- Tracking the last run (built in a managed repo as `scripts/docs/chores.py`): the
   table gets an `Id` column, the commit that does a chore carries a
   `Chore: <id>` trailer (one per chore), and `just docs-chores` prints each
   chore with the date of its last trailer and whether it is due (`weekly`
@@ -111,3 +119,11 @@ no second index file. Agents start at the root AGENTS.md, which links it.
 
 Docs in English; glossaries and places with domain terms in another language
 keep both forms.
+
+## Sources
+
+- Architecture decision records (decision, rationale, consequences) as the model for `decisions/`:
+  <https://adr.github.io/> (the page does not define the Context and Status fields; those follow common ADR templates)
+- Observed in HQ's own repos (a managed product repo's `docs/`, HQ's `docs/backlog/`, `docs/CHORES.md`,
+  `scripts/docs/backlog.py`, `scripts/docs/chores.py`); the file-per-item layout and date-slug ids have no external
+  source.

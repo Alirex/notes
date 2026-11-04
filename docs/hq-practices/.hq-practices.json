@@ -1,79 +1,159 @@
 {
   "source": "evocaslab/hq",
-  "commit": "2b99e6aff90d40efe9ace93acccbdb9bb96dbf84",
+  "commit": "e999c53a45cb5e828261296ad68a78af694c8486",
   "audience": "Alirex/notes",
   "pages": {
+    "agent-harness-evals.md": {
+      "source": "894bc302497c1da8df1eb3772de683373b6f094eea59efb7d1e84c9dcd296a3c",
+      "file": "7862367d3e533b71cddf486d0fcd8dc5faf043d8837c5322064e36444b03b61f"
+    },
     "agent-instructions.md": {
-      "source": "1398dde088eee2ee1612454b9478b48c2423b52f11b17c634adaee942b7e030c",
-      "file": "9baf20a8b42059d22fa7cf7dba00b66c9bb63e1076b388aa969a5a519332ad88"
+      "source": "fa6c838c2324a32027450948e45e8754239c344eb1ff2406243537dd8a0c1a04",
+      "file": "47f762883e1d590faf19ecf7e708caa3709052c8edddf3e3f1fad17f4de40cbe"
     },
     "agent-security.md": {
-      "source": "15820331fa4bb89712d4be54108d969cde51e707d4612c5553f2ff4fbfb4fb49",
-      "file": "e8476ab01bba7bdc43235a8ad40198c552c7e6c12bd0d0e3961f485cd19235ae"
+      "source": "09113972b76c7265bf9415f6412f6e1c90cc2a87dee3a3d3e8a31cbc0dce66ee",
+      "file": "eb901e329df767a7c192e72e541ce2fddaa65c5c14c309cb36f8b9bc38660054"
+    },
+    "agent-workflow.md": {
+      "source": "3a36a7982869ef1eaaa89b58037c271be7dc28c4002ba8960d0e11d22c118f5b",
+      "file": "8da30efccf4dcd7991ac9249717ffbfd8e02c86073f01474ff35f9efcdb45371"
+    },
+    "agile-lessons.md": {
+      "source": "311c2f2fe710df77a0a5452cff602fd5a1ebffdf10867722ed37ce2f2a2c6a15",
+      "file": "51aebfa37eeda99c9c4a16178e800fb79592ac2440ab96233f9152a0e4210de2"
     },
     "architecture-diagrams.md": {
-      "source": "6150511f2d0b0516061360105e728226db5aa40958aa06a1fccd495609dd0164",
-      "file": "b244ca3ec1d721180cd33af954fd623cfa2e5f99a93f40483d0de25dcc18a445"
+      "source": "1d51d799e1a064defc0427e3f5aa4e149bf46720ec9196ed776737219e53950b",
+      "file": "9ea022862f8c70c914f499fad8f1f2aca7c9ab5b93b7ca94bf4450322062b13d"
     },
     "autonomous-sessions.md": {
-      "source": "001720ee237a050109950e13da89cf6ab59e32c1e4994a8d69c955ca8302e73a",
-      "file": "d37f5c81a5dc63627a8f5f9601c0a93c291ed77dbced5c3cb5079cb347d75013"
+      "source": "72afccfcdd4452f4a32a125c33cfab4838ef4bfc191447fe90e7afca86aa791e",
+      "file": "9693a5d7ff6c20a03accd578f77d1622525ff8d1e6ddaad9e4577bd137d8f672"
     },
     "change-discipline.md": {
-      "source": "d27be69ead1e040ea57648ac4ae47572e42b7bbec162f8551d686d2fc48cf9cf",
-      "file": "8907ade241c617d6b376ead633c4388beba3fb87d24543dc6deea3a20474883c"
+      "source": "254c91b755a24db4a13c8c074ae3ef0aaa60fd9bb9e30898a4b5c5c0711b3c1e",
+      "file": "7af9910243d898c18d24921ef457c417dfcfa54178c2e06892d9210d5d98e91c"
+    },
+    "continuous-improvement.md": {
+      "source": "9eebe5a2d1077e4d29bd1659c1b2579e78e22883218db462794ee2da1fef346f",
+      "file": "a95bca39ada0a32593b8913d9a013be38265c94b71aecd33c34c9e7b2b1e7085"
+    },
+    "diagrams-as-code.md": {
+      "source": "5e202fe9f4cd7bf97d2833653b93419ba7444104a8b5a03f02438caebfb7a1a3",
+      "file": "7bb26b6dc8fbc7ff79490a931632c3124893c3c4ec2534e4e573b0cb7056faea"
     },
     "docs-backlog-changelog.md": {
-      "source": "2ea1e65468acd7fdecb54b90cc5f587b304b7d074b6c4e15d5898deefebd5536",
-      "file": "09de972b8202100df9e00862a80a6f84528b5896cfe7383df79e65c0403afbe2"
+      "source": "37756efc01db101368dc248ec330cfab0882c47fed6e85caa070f96e311e3052",
+      "file": "cb1a3524c8ea76f54303360ec684d09c3b7f4b2a2ffb16039ee8f32236eb95ff"
+    },
+    "docs-match-code.md": {
+      "source": "0319bc29c424b9152ae1cd4928fd455a71f2dcfbfbada27e74632560623a3c3b",
+      "file": "2a06ff5572a2ad3ee320b6c80abfefd845f69f289561bcd339603eab5d13ee0b"
     },
     "git-worktrees-and-autoland.md": {
-      "source": "0c0524946fff3450e7b47569b53982c36ac520c31ab94edab5abf0e7734b82ad",
-      "file": "740c1b18b33e8f91737986e2366e9ce717e204f7064d973ba0560c4794fa9e07"
+      "source": "a9d0177ee95c704a137056679c37b2ff64d8c2b717afb319bd283cbe721464e8",
+      "file": "749a3680fda01e6136ad195128525b647e80f2499b035a77f588f8105dbe8344"
     },
     "gitignore-and-ide.md": {
-      "source": "9aafa1d741a92e6fd2a8a10f48682caf819c1eaadeb84357eea94ab8d1efcee6",
-      "file": "e276c1d6afcd99ebbd44533fd036239bd9fc1177cf5e0ec1e6ef8b3be71c10c7"
+      "source": "b7e712744e8c98ac4077fb045f85484c6c84aa88209388df7678b8901d297735",
+      "file": "8439b117f953f5bb7f9109adb46d83e6e8e5ef4f304cc78f003fd416c7e272b2"
+    },
+    "guards.md": {
+      "source": "f49e59adeabd54eadde1fa9417ea51a10379f8fcd6266ce05615f748f80235a2",
+      "file": "fa1410a522af81bf158a1cfa27d0bf3610c47092365e56d33a4c847824633c8a"
+    },
+    "just-recipe-vocabulary.md": {
+      "source": "a6c206bf9dcd6676c853ebb330c61fac914471f9e87fd8022a1637675a6184fa",
+      "file": "d1a1f6d078c95bf44a2395f254e71d4a1f00e985b05e2d6a92d001474a076d96"
     },
     "just-task-runner.md": {
-      "source": "02442be68ce9685fcd9a6d15c343a1a49a4688711bf9cd5d7417907800711b76",
-      "file": "48f7c2f52c1304fececd05b3fbf68e15a8e1a2ee353fd01447a3e5111602bd86"
+      "source": "cffc497de5cce8f255a485c100930618096d5f1593daa3e65fbc362945e0cf16",
+      "file": "42dddc3419cace4cdddbb60d604508360ac657e183d7bccd4cff58077a66542a"
+    },
+    "language-choice.md": {
+      "source": "06b2a42a2a8b00ed60aa5e591cae06e19f606baf87da77efa0be97faeb66ced7",
+      "file": "95e3a97d8022baecf287f05b21a55ed6a78d5f6df5f5f28dd85f6e05dab9d0e5"
+    },
+    "licensing.md": {
+      "source": "72e948d75025a5139647769c491fcb61560c25bbe90b643fabfc4e57b508f295",
+      "file": "c2dfe701e9291a21e31c43272f902562e4b29ea726f71edf73be69d86fd78fcf"
     },
     "lint-strictness.md": {
-      "source": "d37731dced6ce34a61e0504801c15662a67ecdf975e5f031276204c72dd4aee8",
-      "file": "2d9d4ea28b23f02db1517f2a4db6e2bda97a97ba91999ab0b7ec245cf4d834b4"
+      "source": "068284fa3b298881a903db905f7e5cd062994687836361c017f9b2056a4e5085",
+      "file": "2b23e0d128eba935091b1371716ad001fe3746f1e80316ff02609a2f2312b4a9"
     },
     "llm-usage-guards.md": {
-      "source": "9fd08b483ce92e5f8074ad3caac0ed3e1249aeef2107a35e54bea30386550840",
-      "file": "322a29f2a2daa75d1e2473e8b9a7373dcb0d50e941a8b68fbbb04c641c0a03ee"
+      "source": "c057d375eb36d3b815ee925c80f1301db27e33fa5fe94d6d32a843419cabab1e",
+      "file": "d3e2520e0f296ebe39b692e4e5fc8ff8e82bef5d4c871a9583ed46912066b851"
     },
     "maintainer-questions.md": {
-      "source": "4f5408a464e0bdd9d0bb7958eb6adf2f7a711ec120959115d8ec541004648c1e",
-      "file": "09d0daadf02b596fecf40571d2eff82c16739987ce93ded49d3f9fab81e3afc3"
+      "source": "663460fab4de12323b780c266d04b500597648e370362a87dadc3dc9b0858963",
+      "file": "766fa9b9048a6d6c5faf7a1b93f8d7b5b009a5102e1285df801cb907ae88cf93"
+    },
+    "measures-of-performance-and-effectiveness.md": {
+      "source": "7fea03f9e26d3a752de48847b523c5cf69388d4c7ad42f19d5d5432a947807e6",
+      "file": "97488af4e454c02320abee8a18318ecbef567d19e727d57f735c6be35e13605b"
+    },
+    "prepared-commands.md": {
+      "source": "27ab7727140bbb0700f935b75b56fe7c358b162418bdb639037232a33f0a1886",
+      "file": "4561ef2f6b4605c9f983b0445883052dabcc4570fca566589cd85f9cd9a4f300"
+    },
+    "profiling.md": {
+      "source": "e09989001084703f5c56868c455bf340f3dc9753f7d17b23d2bfd804c5f16ca6",
+      "file": "84050f9bacef63db85f521f96811678b887ceca15d2e9857c6977e06bb77d6e7"
     },
     "quality-gate.md": {
-      "source": "f0d544356da08ef30516ac28f0cb03ef320aff5d1da6ce19c48197b0cbe56eb8",
-      "file": "1d488713c4dd48bc53826e58ef8f69cf46b8c501103d623f0c8ea59388c8f461"
+      "source": "442b18da334b93681e208d12c34bd9539832c98b53f708c444973cd488f5d76a",
+      "file": "f6de086dc221c7f51ffbf5355dfb2c86f02b27cdf802ce2ecd6dd1297217ed81"
     },
     "releases-and-versions.md": {
-      "source": "71625b410a933228c8d4c9aafd308656ee499ee39446e9cff0ef4276fc06436c",
-      "file": "c1284045f05a4526a11909570b84513bc6d10b304f1d6d44b1b17c8fea7692a6"
+      "source": "143c2df75503bb7a7da5f90b786598a0b9fb1832fca3b35c3f2a3fddc76a15c9",
+      "file": "b0b0ee972133bc993feb2adc80cfb6d40b95387199625f1687b60b964552b757"
+    },
+    "research-flow.md": {
+      "source": "a9a1065de2fcb26f8d0d21185ace7861623c5927cafa0d188a9ed0e971d1b0d3",
+      "file": "ad6cc53e75a1e93fbee9a7ca8aab8ce4a7e6c89c3b302e4eb1e51a4bf0633972"
+    },
+    "retiring-the-old-stack.md": {
+      "source": "74ebf22ca7eb21f3b067731ee5005adc711a33ba54c57cf6b58ef753582fbfce",
+      "file": "aa3be2d1b6c47511f99b72b159b0b94b651ce6564a337d04eaf2b16298e53fa5"
+    },
+    "review-lenses.md": {
+      "source": "eb1f101f26246b21927356cc275bd8e5a14e8f72f40dbad8176e1b8ccd01a9f8",
+      "file": "d74390bca233553570cb8f268eb2e07191f3cd17d37f2e72c0d4ee21b4101245"
+    },
+    "shared-libraries.md": {
+      "source": "0bcff612bd4eb5efbb266863ff218583bc6e8022a32f0055bbd5b617c4823928",
+      "file": "2aa22444c8178be5d52bdbf6340323680e211fd2da81783023a5038218b94626"
+    },
+    "specifications.md": {
+      "source": "9ee481eef154a2dea31a178ad6c4e261f86fecf4d51887a98028d0535c6be1e7",
+      "file": "5cf661374cb7d0b2b93b51b2b650471fcfb33eeef17701aa74229ab3786dc082"
     },
     "subagents-and-context.md": {
-      "source": "a3a0c0d34d5e2b7858a06a1d9801d2c1d7ccf116b92a1514bd8f18af7a2cab81",
-      "file": "8714939ebeff9f16639702a877bb0edecb1357b31582475493c9686288bbe78f"
+      "source": "6ed9fb70004db0bd1964f0fd52aa9a9ec147b26794f10f103ca7834aa054cee8",
+      "file": "f3dfdaf8880e519d1cbc29391ec7c8da7fd75ca4434792dabdc6db72b9c95edd"
+    },
+    "supervisor-preflight.md": {
+      "source": "915032570cc84eb3095fecca1c2953b22a791d470660973b88602d808f5d9ea6",
+      "file": "ac40d23ea5b0e040cc7e7847cbc6464fa5707997fa303081319e499f2b23923e"
+    },
+    "supplement-evidence-research.md": {
+      "source": "493c84bb0d99da39344a4621564edcf2b2b73b9491cb4be37d2b4867d0559a9f",
+      "file": "5e1d48d6e568afa241a4840dfdc7a2c85041c8930bb8b09691e63dbae1229264"
     },
     "supply-chain-security.md": {
-      "source": "f7b62db35a96b27de2cb7d81aea895789bd5bb33319739a280d8882e741932c9",
-      "file": "30fce63c44efd84b5304a5dd4955e6a682734817a8bb52f3c832b024f456aa97"
+      "source": "eb8e2cbc02748441f85a6a52e45d4b18c83814cebe595894025808d78f459cbd",
+      "file": "06a288d60753598cf51346c75e41864115875390e3b8cfcda0f99cc261c8a5e4"
     },
     "testing.md": {
-      "source": "409e1f54a51e2fe39d6833fd503115ccb518095acca7209be45e75e8445112a7",
-      "file": "d8e7b35728618fc233aea3c331d02bcc1a929658be86479a69ad317ea4cf82c2"
+      "source": "b9e250eb0195ce8c8ca1c3061d178ce3e5aaedb750b4ff45799c7b6d667bd1f9",
+      "file": "5cb0c672d7bafe0ad7c6222a542cdca5984c4d237cc1a00e0e83d20f58ca8f18"
     },
     "tooling-and-deps.md": {
-      "source": "05faabe4afa343294e09d511816023aa76263683764246de3aa39ba1514c7462",
-      "file": "ff5d62cfe4cc37910319ff9bf5b0ae5b1b9f4ea140d3f7d6c2cc7a8a901d7e44"
+      "source": "6c015d749cdda22d9e1ce423aad0663554a66579fd32bd79dac299438251b5d7",
+      "file": "7dd34566033577f425ffd3f74d398ae86714b9712824bf17eda4ab1e0ece8a91"
     }
   }
 }

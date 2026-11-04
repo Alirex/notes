@@ -3,7 +3,7 @@ summary: "ARCHITECTURE.md and diagrams: hand-written views, generated views with
 group: docs
 tags: [docs, diagrams]
 applies-to: [all]
-reviewed: 2026-10-28
+reviewed: 2026-11-01
 status: stable
 ---
 
@@ -12,7 +12,8 @@ status: stable
 How a repo shows what it is made of: a short `ARCHITECTURE.md`, a few hand-written diagrams of intent, and generated
 diagrams of everything a file already defines (services, compose, crates, schema), checked in the gate like a
 committed OpenAPI file. HQ is the example: [docs/architecture/](https://github.com/evocaslab/hq/blob/main/docs/architecture/README.md),
-`scripts/docs/diagrams/`.
+`scripts/docs/diagrams/`. Which tool draws what, the render check that parses every diagram, and the size and text
+alternative rules are in [diagrams-as-code.md](diagrams-as-code.md).
 
 ## Rules
 
@@ -29,8 +30,12 @@ committed OpenAPI file. HQ is the example: [docs/architecture/](https://github.c
 | Mermaid in fenced ` ```mermaid ` blocks; containers drawn as `flowchart` with `subgraph` boundaries | GitHub renders it with no build step; plain text diffs and reviews; agents write it reliably |
 | Every box: name, `[technology]`, one line of responsibility; every arrow: one direction, what flows and how (`reads, writes [SQL 5432]`), never a bare "uses" | C4 notation: a diagram must read without a narrator |
 | At most about 15 boxes and 25 arrows; split by boundary when bigger | past that nobody reads it |
+| **One level per diagram**: a context box holds no containers, a container box holds no image tag, memory limit or port (those belong on the compose view or in the text under it), a flow holds no storage detail | mixed levels make the reader guess what a box is; found in two repos' pages in the 2026-11-01 survey |
+| Line weight carries no meaning: no `==>` thick arrows; a dashed arrow (`-.->`) means optional or asynchronous and its label says so | weight is a colour-like cue that fails in print and grey scale, and a legend nobody reads is the only key |
+| A stub or template page has no "Reviewed against the code" line until a person has read the code it names; the stub says "Not yet reviewed" | a copied template with today's date is a false claim that every new repo inherits |
+| A container view lists every service or unit the repo ships (compose service, systemd unit, binary); a test or the generator's compose view compares them | a hand-written container list that omits a service (a `migrate` one-shot) is the commonest drift |
 | Colour only **repeats** what shape and label already say: the [palette](#colour)'s `classDef`s, one per role, no `%%{init}%%` theme, no `style` or `linkStyle` | GitHub switches Mermaid's theme with the reader's mode; colour fails in print, in grey scale and for about one man in twelve |
-| Every Mermaid block opens with `accTitle` and `accDescr` | screen readers get a name and a sentence instead of an unlabelled SVG |
+| Every Mermaid block opens with `accTitle` and `accDescr`; the render hook fails without them ([diagrams-as-code.md](diagrams-as-code.md#the-validation-hook)) | screen readers get a name and a sentence instead of an unlabelled SVG |
 | A state diagram for each real state machine, **pinned by a test** that compares its states with the code's; states kept as plain strings get an enum (and a transition table) first | a state diagram that disagrees with the enum is worse than none, and strings give the test nothing to compare |
 | Sequence diagrams pin their **participants**: each tagged `[crate]`, `[unit]` or `[service]` must name a real one (a check in the gate); the messages stay free text | a renamed or removed container then fails the gate; message wording is not worth pinning |
 | Invariants in `ARCHITECTURE.md` are enforced by tests where a tool can (import-linter contracts, a crate-graph test) | a written boundary nobody checks is a wish |
@@ -113,6 +118,11 @@ flowchart LR
 - **Whole diagram or nothing**: once a block has a `classDef`, every box takes a class; an unclassed box would show
   the theme's default fill and look like one more role. A view with one kind of box (the crate graph) stays plain.
 - **Legend**: a page with coloured diagrams says once that the colours repeat the shapes, linking here.
+- **Foreign palettes do not hold**: Material-style pastel pairs (a repo's `INFO_FLOW` diagrams in the 2026-11-01 survey)
+  measured 1.6–2.6:1 against GitHub's dark background for five of their dark outlines (`#01579B`, `#1B5E20`, `#7B1FA2`,
+  `#4A148C`, `#37474F`) and 2.0–2.6:1 on white for the yellow ones (`#F9A825`, `#F57F17`), all under
+  the 3:1 that WCAG 1.4.11 asks. A repo with its own `classDef` colours moves to this palette; a role the palette lacks
+  is added here, not invented per repo.
 - Edges, subgraphs and the `erDiagram`, `sequenceDiagram` and `stateDiagram` types keep the theme's colours.
 
 The gate pins it: `colour_problems` in HQ's `scripts/docs/diagrams/diagrams.py` (run by `check` over generated and
@@ -179,6 +189,8 @@ the diagram's entities and compares them with the code's list (`Base.metadata.ta
 
 ```mermaid
 sequenceDiagram
+    accTitle: Pinned participants example
+    accDescr: The API crate calls the auth crate; both names are checked against the workspace.
     participant A as hq-api [crate]
     participant S as hq-auth [crate]
     A->>S: login_password
@@ -203,8 +215,10 @@ Each boundary named in `ARCHITECTURE.md` gets a check that cites it:
 - The is-current hook (`diagrams-current`): generated pages current, hand-written pages dated and their pinned
   participants real.
 - The state-diagram test beside the code it pins.
-- Once per new diagram: render it in Mermaid (GitHub's preview, or a local page importing the same major version) in
-  light and dark. `mermaid.parse` catches syntax errors; only a look catches an unreadable layout (HQ's container view
+- The render hook (`mermaid-parses`, `just docs-mermaid`) parses and renders every Mermaid block with a pinned Mermaid
+  and fails on a syntax error ([diagrams-as-code.md](diagrams-as-code.md#the-validation-hook)).
+- Once per new diagram: look at the render (`just docs-mermaid render --out DIR`, or GitHub's preview) in light and
+  dark. The hook catches syntax errors; only a look catches an unreadable layout (HQ's container view
   went from `LR` to `TB` for that reason). With colour, look once more through a deuteranopia filter (an SVG
   `feColorMatrix` on the page, or the browser's DevTools "Emulate vision deficiencies").
 - The palette tests: outline contrast on both backgrounds, text on fills, simulated colour-blind distance, and
@@ -218,7 +232,16 @@ Each boundary named in `ARCHITECTURE.md` gets a check that cites it:
   store, and any service it calls; a state diagram for the main window's modes when they have rules.
 - **Bigger than Mermaid fits**: [D2](https://d2lang.com/) (MPL-2.0, better layouts) with the SVG committed and a
   render check; [Structurizr DSL](https://docs.structurizr.com/dsl) once a repo needs more than a handful of views
-  of one model. Neither renders on GitHub by itself.
+  of one model. Neither renders on GitHub by itself; the comparison is in [diagrams-as-code.md](diagrams-as-code.md#tools-compared).
+
+## Starter in repo-template
+
+The starter repo template (repo-template) ships an `ARCHITECTURE.md` stub (review date,
+empty context and container diagrams in the palette, codemap, invariants) and `scripts/docs/check_architecture.py`, a
+small gate stage with the page-level rules only: review date, `accTitle`/`accDescr`, palette `classDef`s, every box
+classed. A repo that grows generated views moves to the generator's `colour_problems`. A checker that names the
+suppression markers it looks for (`type: ignore`) must be exempt from the gate-integrity scan, or the scan flags its
+own fixtures.
 
 ## Creating or refreshing a repo's docs
 
@@ -247,5 +270,7 @@ check, landing.
   [1.4.6 Contrast (Enhanced)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-enhanced.html); Machado, Oliveira
   and Fernandes, [A physiologically-based model for simulation of color vision deficiency](https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html)
   (2009); Mermaid [classDef](https://mermaid.js.org/syntax/flowchart.html#classes) and
-  [accessibility options](https://mermaid.js.org/config/accessibility.html).
+  [accessibility options](https://mermaid.js.org/config/accessibility.html); C4 model
+  [checklist](https://c4model.com/diagrams/checklist) (title, key, one level, labelled one-way arrows).
 - Write the Docs, [Docs as code](https://www.writethedocs.org/guide/docs-as-code/).
+- Animated, interactive explainers for learners: [visual-explainers.md](https://github.com/evocaslab/hq/blob/main/practices/visual-explainers.md)

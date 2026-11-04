@@ -4,10 +4,13 @@ group: agents
 tags: [git, worktrees]
 applies-to: [all]
 reviewed: 2026-10-28
+explainers: [landing-claims]
 status: stable
 ---
 
 # Git worktrees and auto-land
+
+See it: [a landing claim against git](https://github.com/evocaslab/hq/blob/main/practices/explainers/landing-claims/index.html) (with a short quiz)
 
 A workflow for one maintainer with several agents working in parallel.
 
@@ -50,6 +53,26 @@ When the task is done and the full gate passed, the agent lands without asking:
 
 If the push is rejected because another agent landed first: fetch, merge again,
 re-run the checks the new commits affect, retry.
+
+Land only the tree that passed. The gate runs for minutes and `main` moves meanwhile: fetch right before the merge and
+check `git merge-base --is-ancestor origin/main HEAD`. If it fails, merge again and re-gate; a landing that pulled in
+commits nobody gated is a guess, and the only fix is a gate on `main` afterwards (observed once: the check passed, but
+only after the push).
+
+Only a full gate result lands a branch, never a local spot check: a tool missing in the agent's shell (shellcheck was not
+on its PATH) means run the gate, which has it, not skip the check. A landing before the gate's last verdict puts a
+rejected commit on `main` (Optiomni, 2026-11-04: `just repos-land` landed a script that failed shellcheck, a follow-up
+had to land). Run one gate per worktree at a time. A branch that is behind `main` shows the newer main files as deleted
+in `git diff --stat origin/main`: merge `origin/main` before judging a diff or gating.
+
+A worktree's `node_modules` symlink (made to share the install) must stay untracked. A builder that runs `git add -A`
+commits it, and a worktree with the untracked symlink makes `repos-land` print "NOT finished": check
+`git ls-files web/node_modules` on a builder's branch, `git rm --cached` it, and remove the symlink before
+`repos-finish`.
+
+A merge conflict in a generated file (API revision counter and hash, schema, a version fixture) is never merged by
+hand: take the other side, run the generator, commit the result. Formatters that run as the gate's first stage can
+rewrite files and leave the pass unrecorded ("uncommitted changes"): commit the rewrite and run the gate once more.
 
 ## When to stop and ask instead
 
@@ -126,3 +149,23 @@ Record a pass per git *tree* (not commit) in the shared git dir
 (`$(git rev-parse --git-common-dir)/quality-passed/<tree>`). A merge that
 produces an already-passed tree, or differs only in docs, needs no new gate.
 See [quality-gate.md](quality-gate.md).
+
+## Worktree location and cargo
+
+A worktree created inside another repo's tree (for example HQ's `.claude/worktrees/`) sits under that repo's cargo
+workspace discovery: `cargo` in a different Rust repo's worktree finds the wrong workspace root and fails. Create a
+worktree for repo X inside X (or beside it), never under a different Rust repo.
+
+## Sources
+
+- Observed in HQ's backlog v2 work (2026-11-03): a worktree under HQ's `.claude/worktrees/` broke cargo for a
+  second Rust repo.
+- Observed in the JAS Bot passkey landing (2026-11-01): a generated-file conflict, a formatter rewrite after the gate
+  and a `main` that moved during a seven-minute gate.
+- Observed in Optiomni's family tree and icon landings (2026-11-04): a landing before the gate verdict, a committed
+  `node_modules` symlink, a branch behind `main` read as deleted files.
+- `git worktree add -b`, linked worktrees, `remove`, `prune`: <https://git-scm.com/docs/git-worktree>
+- `git rev-parse --git-common-dir` (the shared git dir for the gate-pass records): <https://git-scm.com/docs/git-rev-parse>
+- Commit message format `type(scope): description`, body and footers: <https://www.conventionalcommits.org/en/v1.0.0/>
+- Observed in HQ's own repos and sessions (auto-land, push-every-commit, the numbered menu); no external source for
+  those workflow rules.

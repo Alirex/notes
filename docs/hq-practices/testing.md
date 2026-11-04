@@ -3,7 +3,7 @@ summary: "Test-first, fixtures, guard tests, e2e, flaky tests, parity tests, thr
 group: quality
 tags: [tests]
 applies-to: [all]
-reviewed: 2026-10-30
+reviewed: 2026-11-04
 status: stable
 ---
 
@@ -11,7 +11,7 @@ status: stable
 
 How tests are set up so they are fast, safe for real data, and catch more than
 line coverage. The gate that runs them: [quality-gate.md](quality-gate.md).
-Examples are from `report-bot` (`conftest.py`, `pyproject.toml`, `docs/monorepo/`).
+Examples come from a Python monorepo with a Vue frontend and a PostgreSQL database.
 
 ## Test-first for behavior changes
 
@@ -82,7 +82,7 @@ Examples are from `report-bot` (`conftest.py`, `pyproject.toml`, `docs/monorepo/
 
 Integration tests run against the real service (PostgreSQL, Redis, a routing engine, an S3 stand-in) in a
 container the test run starts and owns, never against a shared or production instance, and never against a
-look-alike (SQLite in place of PostgreSQL). Same image and major version as production. `report-bot` since
+look-alike (SQLite in place of PostgreSQL). Same image and major version as production. One service,
 2026-10-26: 6,862 pytest tests in 33 s on one container with xdist, a template clone per test.
 
 | Choice | Rule | Why |
@@ -92,11 +92,11 @@ look-alike (SQLite in place of PostgreSQL). Same image and major version as prod
 | Reuse | `<APP>__TEST_DATABASE_URL` names a server to reuse; nothing is started then | A dev server, a CI service container, a gate that shares one server |
 | Speed | Data dir on a sized tmpfs (`--tmpfs /var/lib/postgresql:rw,size=2g`) plus `--memory` above it, so a runaway test hits a limit, not the host; `fsync=off`, `synchronous_commit=off`, `full_page_writes=off`, `initdb --no-sync`; `max_connections` above the parallelism | Durability means nothing for a database that dies with the run |
 | Ports | Publish on `127.0.0.1` with a random host port (`-p 127.0.0.1::5432`), read it back with `docker port` | Parallel runs and worktrees never collide; nothing listens on the LAN |
-| Name | `<app>-test-<service>-<random>`; distinct from every production container | `docker stop` on a test name can never hit `jasbot-postgres` |
+| Name | `<app>-test-<service>-<random>`; distinct from every production container | `docker stop` on a test name can never hit `myapp-postgres` |
 | Image | Pin tag **and digest** (`postgres:18-alpine@sha256:…`), read from the compose file the updater already watches, or matched by a Renovate regex manager (Dependabot does not see an image in a code constant) | A tag moves; a digest is the bytes the last green run used ([supply-chain-security.md](supply-chain-security.md)) |
 | Labels | `hq.test=1`, `hq.test.owner=<boot-id>/<pid>`, `hq.test.host=<hostname>`, `hq.test.expires=<unix time>` (start + the longest sane run), plus the app's own label. The boot id is Linux's `/proc/sys/kernel/random/boot_id` stripped, macOS's `sec` from `sysctl -n kern.boottime`. The pid is the **long-lived owner** (the pytest controller's `os.getpid()`, the gate's `$$`, e2e global setup's `process.pid`), passed to the start helper as `--owner-pid`, never the helper CLI's own pid (`uv run` does not exec, so even its parent is uv) | A reaper can tell a live run's container from a leftover without asking anyone |
 | Cleanup | `--rm`, stop in the session teardown and in the gate's EXIT trap, **plus a watcher that outlives the run** (below) | Teardown and traps never run on SIGKILL, an OOM kill or a killed terminal |
-| Leftovers | Each start first reaps this app's stale containers; a `just <prefix>-test-containers` recipe (`ls`, `reap`) for the rest | So leftovers can't pile up (`report-bot`, 2026-10-27: five, one with 73 orphaned databases) |
+| Leftovers | Each start first reaps this app's stale containers; a `just <prefix>-test-containers` recipe (`ls`, `reap`) for the rest | So leftovers can't pile up (one service, 2026-10-27: five, one with 73 orphaned databases) |
 | No Docker | No URL and no `docker`: **fail** with the fix in the message (start Docker, or set the URL). A suite where only a few tests need the service may `skip` those with that reason locally, never in CI (`CI` set: fail) | A silent skip turns a missing service into a green run ([lint-strictness.md](lint-strictness.md)) |
 | CI | The same code path: prefer Docker on the runner (the same `docker run` and flags); a `services:` container cannot take `-c` server flags or a tmpfs, so use it only through the reuse variable when the defaults are fine | One way to get a server, so CI tests what runs locally |
 
@@ -144,15 +144,14 @@ runs until someone notices. Three layers, each cheap:
   (`migrations = false` to skip, `fixtures("name")` for SQL fixtures, run in the given order, so order them by
   foreign key). It needs a superuser `DATABASE_URL` and the `migrate` feature; a failed test keeps its database
   for debugging. All test pools share the server's `max_connections`, so keep it above the test parallelism. When
-  the migrations are slow, clone a template instead (`report-bot`: `JASBOT_TEST_TEMPLATE_URL`) and keep one test
+  the migrations are slow, clone a template instead (for example a `<APP>_TEST_TEMPLATE_URL` variable) and keep one test
   that runs the real migrations.
 
 ### Libraries
 
 testcontainers (Python, Rust, Go, Java, Node) gives the same container-per-run with a fluent API. Use it when it
 fits, with Ryuk off on hosts that forbid the Docker socket in containers (`TESTCONTAINERS_RYUK_DISABLED=true`) and
-the watcher and sweep above in its place. A plain `docker run` helper of about 100 lines (`report-bot`:
-`packages/jas-bot/src/jas_bot/db/testing.py`) is just as good and has no daemon-side parts; either way, keep the
+the watcher and sweep above in its place. A plain `docker run` helper of about 100 lines (a `db/testing.py` module) is just as good and has no daemon-side parts; either way, keep the
 rules in the table.
 
 ### Tests that pin it
@@ -179,25 +178,21 @@ default), [testcontainers-rs](https://docs.rs/testcontainers/latest/testcontaine
 [IntegreSQL](https://github.com/allaboutapps/integresql),
 [GitHub Actions PostgreSQL service](https://docs.github.com/en/actions/using-containerized-services/creating-postgresql-service-containers),
 [pytest-xdist `worker_id` / `testrun_uid`](https://pytest-xdist.readthedocs.io/en/stable/how-to.html).
-Examples: `report-bot` `packages/jas-bot/src/jas_bot/db/testing.py`, root `conftest.py`, `scripts/quality/gate.sh`;
-HQ `scripts/machine/test-containers.py`.
+Examples: a `db/testing.py` helper, the root `conftest.py` and a gate script; HQ `scripts/machine/test-containers.py`.
 
 ## Guard tests over prose
 
 A rule written only in a doc gets forgotten; a test that walks the code does not.
-Prefer a small test that fails with the offending names. Kinds used in
-`report-bot`:
+Prefer a small test that fails with the offending names. Kinds in use:
 
 - **Route table walk (auth).** Read the live route table; every route must be in
   a `PUBLIC` or `SETUP` allow-list or reject an anonymous / no-2FA session.
-  (`apps/jasbot-web/tests/test_two_factor_api.py`)
 - **OpenAPI shape.** Every `operationId` is `<tag>_<route_name>`; every path sits
   under the API prefix. (`test_routing.py`)
 - **Nav and permission sync.** Frontend nav items and router routes declare the
   same permission; every permission-gated page has a nav item.
-  (`web/jasbot/src/nav/items.spec.ts`)
 - **Icon registry.** Every icon name found in the sources is registered, via a
-  raw-text glob of the source files. (`web/jasbot/src/plugins/icons.spec.ts`)
+  raw-text glob of the source files.
 - **Backlog files.** Front matter and ids of the backlog dir are valid
   (`tests/test_docs_backlog.py`; see [docs-backlog-changelog.md](docs-backlog-changelog.md)).
 - **Tool pins.** Every uv pin equals `required-version`
@@ -211,7 +206,7 @@ Prefer a small test that fails with the offending names. Kinds used in
   renames (drop + add), anonymous constraints, CHECK expressions or partial
   index predicates. So: declare every index and constraint in the model
   (`__table_args__`, `Index(..., unique=True, postgresql_where=text(...))`),
-  never only in a migration or a comment (`report-bot` lost two partial unique
+  never only in a migration or a comment (one project lost two partial unique
   indexes that way in a new PostgreSQL baseline; a review caught it), and name
   them all through a naming convention on `MetaData`. Prove the check works with
   a negative test (change a temp copy of the metadata, expect a diff). A second
@@ -237,12 +232,21 @@ Prefer a small test that fails with the offending names. Kinds used in
   on failure.
 - **A flaky test is a bug, not noise.** On a failure that passes on rerun: do not just rerun. Find the shared
   state, clock or ordering, fix it, or quarantine it with a backlog item and a date; the gate never retries
-  silently. Slow password hashing, ports and temp paths are the usual causes: use unique ports and per-test dirs.
+  silently. Slow password hashing, ports and temp paths are the usual causes: use unique ports and per-test dirs. A
+  fixed dev-server port in an e2e config breaks parallel gates ([quality-gate.md](quality-gate.md#hooks-that-run-next-to-other-gates)).
 - **Pin the contract.** The generated OpenAPI file is committed and a hook fails when it is stale; a response-shape
   test per endpoint catches a field that disappears for a client ([web-api.md](https://github.com/evocaslab/hq/blob/main/practices/web-api.md)).
 
 ## E2E (Playwright)
 
+- **A page that fails only under load: read the trace before adding a retry.** Chromium aborts in-flight requests with
+  `net::ERR_NETWORK_CHANGED` when the host's network interfaces change (a Docker container starting in another gate is
+  enough), so a dev server's module fetches fail and the page stays empty. Record `trace: 'retain-on-failure'`, find
+  the failed request, and answer that one cause: warm every route once in `globalSetup` (the first request compiles
+  it), and reload only when a `requestfailed` with that error was seen. Cut the worker count when the 1-minute load
+  is high instead of raising timeouts. A blind retry hides real bugs.
+- **A test run by a git hook strips `GIT_*`.** pre-commit exports `GIT_DIR` and `GIT_INDEX_FILE`; a test that runs git
+  in a temp repo then works on the real one. Delete every `GIT_*` variable in an autouse fixture.
 - **One worker, one backend.** Each worker starts its own API with a throwaway
   data dir and ports from a fixed table; it also serves the prebuilt frontend
   (built once in global setup), so no dev server runs. Import `test` / `expect`
@@ -262,8 +266,8 @@ Prefer a small test that fails with the offending names. Kinds used in
 - **Quote search phrases** when a test searches for text that other tests' data
   could also match in the same worker.
 - **Never assert on shared aggregates.** A count, total, badge or title prefix
-  changes with other files' data in the same worker: `report-bot`'s page-title
-  test failed as `(2) Головна · JAS Bot` once another file created two pending
+  changes with other files' data in the same worker: a page-title
+  test failed as `(2) Home · My App` once another file created two pending
   items. Match only the part the test owns (a regex with an optional prefix,
   `toContainText`), or give the test its own scope (user, project) so counters
   start at zero. Prefer unique data per test (a suffix from `testInfo.testId`)
@@ -272,6 +276,13 @@ Prefer a small test that fails with the offending names. Kinds used in
   `--repeat-each=2`, or the files in reverse order; a test that passes alone and
   fails after another is coupled through data. Do not lower the worker count to
   hide it.
+- **Test the production topology.** An e2e stage that starts only part of what production runs (no background
+  host, a stand-in for the scheduler owner) blocks removing the old code and hides bugs: start the same processes with
+  the same owner settings, and use a stand-in only for what is really external. A status read derived from an owner's
+  database rows cannot see a host that writes no rows; give such a host a row, or test the read with a stand-in.
+- **Iterate on one failing spec.** A full e2e run takes minutes. Run the single failing spec first, read the failing
+  assertion and its snapshot, change one thing per run, and run the whole suite once at the end (one worker made 11
+  full runs for 3 specs).
 - Per-worker ports, data dirs and users come from `testInfo.parallelIndex`
   (stable across worker restarts), not `workerIndex`.
 - Retry once; a pass on retry is reported as flaky (see below). Speed and worker
@@ -317,7 +328,7 @@ what nobody wrote down.
 ## Data migration verification
 
 For a one-shot move of production data (another database engine, a schema
-rewrite). `report-bot`'s SQLite → PostgreSQL cutover, 2026-10-26: 81,554 rows in
+rewrite). One SQLite → PostgreSQL cutover, 2026-10-26: 81,554 rows in
 61 tables, a dry run and the real run gave the same counts and checksums.
 
 - **Dry run on a read-only copy** of the production file or dump, into a
@@ -343,6 +354,26 @@ rewrite). `report-bot`'s SQLite → PostgreSQL cutover, 2026-10-26: 81,554 rows 
 Vitest with `pool: 'vmForks'`: jsdom is created once per worker, not once per
 spec file (a ~20 s run became ~6 s).
 
+A spec that fails only under load usually exposes a real race, not a slow machine (Optiomni, 2026-11-04): a button enabled
+before the state it reads (the player id) had loaded, and a polling interval armed only after the first fetch settled.
+Fix the cause: disable an action until its state is ready, and wait on a readiness condition (`vi.waitFor`, advancing fake
+timers inside it); never raise the timeout ([quality-gate.md](quality-gate.md)).
+
+A green run can still fail the gate: a spec that ends while its component still awaits something (a store refresh, a
+database read), or that never unmounts, lets a `t()` or render run after the test environment is torn down, and Vitest
+reports an unhandled rejection (`process is not defined`) although every test passed (Optiomni, 2026-11-04, three gate
+runs). Unmount every wrapper in `afterEach`, make the spec wait (`vi.waitFor`) for the visible result of the async work,
+and show a notice only after the data refresh it announces, so no work outlives the test.
+
+Async form validation (a rule that awaits) changes spec timing: `await flushPromises()` after a submit before asserting
+an emit. A lazy route (`() => import(…)`) makes navigation async: `vi.waitFor` the page, not one tick.
+
+## Database tests belong in the cheap loop
+
+A DB-backed HTTP suite that only runs in a special recipe rots unseen: a renamed cookie constant left 11 tests failing
+with 401 and one unit test stale until someone ran them. Build test requests from the exported constants (cookie name,
+header names), and run the DB recipe in the gate or the pre-landing step, not only on request.
+
 ## Coverage-guided passes
 
 Total coverage hides weak spots. List the least-covered modules that matter
@@ -354,7 +385,7 @@ item. Verify the claim for a module with the package-level `--cov` of the gate;
 ## Mutation testing
 
 Not in the gate (slow, all cores): run it through the heavy lock on the core
-parsers monthly or after a parser change. Tool in `report-bot`: mutmut,
+parsers monthly or after a parser change. Tool for Python: mutmut,
 configured in `[tool.mutmut]`.
 
 1. Mutate one module (about a minute) or all configured modules.
@@ -368,3 +399,42 @@ configured in `[tool.mutmut]`.
 6. Commit the tests on a `test/mutants-<area>` branch; land after the gate.
 
 See also [database-integrity.md](https://github.com/evocaslab/hq/blob/main/practices/database-integrity.md) and [database-performance.md](https://github.com/evocaslab/hq/blob/main/practices/database-performance.md): concurrency, query-count and schema-guard tests.
+
+See also [continuous-improvement.md](continuous-improvement.md): slowest N on every run, a quarantine cap, runner traces on failure.
+
+## Scratch databases on a shared server
+
+- A test helper that creates a throwaway database on a server shared by several stages (unit tests, e2e and the Rust
+  tests of one gate) must drop it again: put the `DROP DATABASE ... WITH (FORCE)` guard in the handle tests move
+  around (the `Db`), not in a wrapper that tests take apart, and keep that handle alive as long as the pool is used.
+- A tmpfs-backed server is RAM: on a failure, report disk use of the server and host load and memory, because three
+  overlapping gates look like "disk full" and are memory pressure; take the heavy lock so gates run one at a time.
+- Frontend hook tests over an `openapi-fetch` client: the client captures `fetch` and the base URL when the module
+  loads, so stub both in `vi.hoisted`, not in `beforeEach`.
+
+## Sources
+
+- Unhandled errors after teardown, Vitest: <https://vitest.dev/guide/common-errors>; observed in Optiomni's PackManager
+  and App specs (2026-11-04).
+- Playwright traces (`trace: 'retain-on-failure'`): <https://playwright.dev/docs/trace-viewer-intro>; Chromium net error
+  `ERR_NETWORK_CHANGED` (-21): <https://source.chromium.org/chromium/chromium/src/+/main:net/base/net_error_list.h>
+  (seen in HQ's phone-width run, 2026-11-04); pre-commit sets `GIT_DIR`/`GIT_INDEX_FILE` for hooks (git
+  environment variables: <https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables>)
+- pytest `addopts` and `testpaths` in configuration files: <https://docs.pytest.org/en/stable/reference/customize.html>;
+  `tmp_path` retention options: <https://docs.pytest.org/en/stable/how-to/tmp_path.html>
+- coverage.py `branch`, `source`, `omit`, `exclude_also`: <https://coverage.readthedocs.io/en/latest/config.html>
+- Playwright workers, files in parallel, tests in a file in order, `parallelIndex` stable across restarts:
+  <https://playwright.dev/docs/test-parallel>; retries and flaky reporting: <https://playwright.dev/docs/test-retries>
+- Vitest `vmForks` pool: <https://vitest.dev/config/pool> (the jsdom-per-worker speed-up is HQ's measurement)
+- PostgreSQL `CREATE DATABASE` `TEMPLATE` (no other connections) and `STRATEGY` `WAL_LOG` / `FILE_COPY`:
+  <https://www.postgresql.org/docs/current/sql-createdatabase.html>
+- sqlx `#[sqlx::test]` (database per test, migrations, fixtures, superuser URL, failed test keeps its database):
+  <https://docs.rs/sqlx/latest/sqlx/attr.test.html>
+- mutmut `[tool.mutmut]` configuration: <https://mutmut.readthedocs.io/en/latest/>
+- git environment variables (`GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE`, `GIT_CONFIG_GLOBAL`, `GIT_TERMINAL_PROMPT`):
+  <https://git-scm.com/docs/git#_git_environment_variables>
+- Observed in one Python monorepo (6,862 tests in 33 s, 2026-10-26; the SQLite to PostgreSQL cutover; flaky e2e cases) and HQ's
+  test-container tooling; the numbers and the container-cleanup design are their own. The inline "Sources:" paragraph in
+  the throwaway-containers section lists further Docker, Ryuk and testcontainers links not re-read for this section.
+
+See also [guards.md](guards.md): the catalogue of guards per rule.

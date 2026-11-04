@@ -20,7 +20,7 @@ When a check fails, take the first option that works:
 1. **Fix the code**: the finding is usually right.
 2. **Make the types stricter.** Most type findings come from data with no type (`dict[str, Any]`, parsed JSON/TOML,
    untyped libraries). Validate it once at the boundary into a typed model, or narrow it, then the rest of the code is
-   typed (see [Stricter types](#stricter-types)).
+   typed (see [Stricter types](#stricter-types) and [parse-dont-validate.md](https://github.com/evocaslab/hq/blob/main/practices/parse-dont-validate.md)).
 3. **Restructure**: too many arguments → an options object; too complex → smaller functions; a broad `except` → the
    specific exceptions.
 4. **Suppress one line**, scoped to the rule, with a reason on the same line or just above:
@@ -52,7 +52,7 @@ An ignore that outlived its cause hides the next real finding on that line. Make
 | basedpyright | `reportUnnecessaryTypeIgnoreComment = "error"`, `reportIgnoreCommentWithoutRule = "error"` (both on in `all`) |
 | mypy | `warn_unused_ignores` (in `strict`), `enable_error_code = ["ignore-without-code"]` |
 | TypeScript / ESLint | `@ts-expect-error` with a description, never `@ts-ignore` (`ban-ts-comment`); `linterOptions.reportUnusedDisableDirectives: "error"` |
-| Rust | `cargo clippy --workspace --all-targets --all-features -- -D warnings` with the `pedantic`, `nursery` and `cargo` groups plus single restriction lints (`unwrap_used`, `expect_used`, `panic`, `unreachable`, `allow_attributes`, ...) warned in `[workspace.lints]`, `unsafe_code = "forbid"`, `cargo doc` with `-D warnings`; tests exempt through `clippy.toml` (`allow-unwrap-in-tests`), not attributes ([rust-service.md](https://github.com/evocaslab/hq/blob/main/practices/rust-service.md#lints)) |
+| Rust | `cargo clippy --workspace --all-targets --all-features -- -D warnings` with the `pedantic`, `nursery` and `cargo` groups plus single restriction lints (`unwrap_used`, `expect_used`, `panic`, `unreachable`, `allow_attributes`, ...) warned in `[workspace.lints]`, `unsafe_code = "forbid"`, `cargo doc` with `-D warnings`; tests exempt through `clippy.toml` (`allow-unwrap-in-tests`), not attributes ([rust-service.md](https://github.com/evocaslab/hq/blob/main/practices/rust-service-tooling.md#lints)) |
 
 ## Strictest mode per tool
 
@@ -64,7 +64,7 @@ An ignore that outlived its cause hides the next real finding on that line. Make
 | pytest | `--strict-markers --strict-config`, `xfail_strict = true`, `filterwarnings = ["error"]` |
 | TypeScript | `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride` |
 | ESLint | `typescript-eslint` `strictTypeChecked` + `stylisticTypeChecked`, `--max-warnings 0` |
-| Rust | `cargo clippy --workspace --all-targets --all-features -- -D warnings` with `clippy::pedantic` and the `unwrap_used`/`expect_used`/`allow_attributes` restriction lints warned in `[workspace.lints]`, `unsafe_code = "forbid"`; tests exempt through `clippy.toml` (`allow-unwrap-in-tests`), not attributes ([rust-service.md](https://github.com/evocaslab/hq/blob/main/practices/rust-service.md#lints)) |
+| Rust | `cargo clippy --workspace --all-targets --all-features -- -D warnings` with `clippy::pedantic` and the `unwrap_used`/`expect_used`/`allow_attributes` restriction lints warned in `[workspace.lints]`, `unsafe_code = "forbid"`; tests exempt through `clippy.toml` (`allow-unwrap-in-tests`), not attributes ([rust-service.md](https://github.com/evocaslab/hq/blob/main/practices/rust-service-tooling.md#lints)) |
 | shellcheck | `enable=all` in `.shellcheckrc`, disabling single optional checks with a reason |
 | markdownlint, prettier, YAML | default rules, line length set once for the repo |
 
@@ -96,8 +96,7 @@ The same rule for every other way to make a failure quiet:
 
 ## Keeping it that way
 
-- **A guard counts suppressions.** The gate fails on a suppression with no reason (example:
-  `report-bot/scripts/quality/check_type_hatches.py`), so new ones are visible in review.
+- **A guard counts suppressions.** The gate fails on a suppression with no reason (a small script that scans the sources), so new ones are visible in review.
 - **A ratchet for an existing repo.** Turn the strict mode on, record the current count of findings or suppressions
   per rule in a baseline file, and fail the gate when a count grows. Lower the baseline in every change that fixes
   some; never raise it.
@@ -115,3 +114,27 @@ A silenced warning hides the bug it pointed at, and the next one like it. Typed 
 classes of findings at once, where per-line ignores have to be repeated in every caller. Unused-suppression checks
 keep the remaining ignores honest. A strict baseline costs most on day one; adding strictness to an old codebase later
 costs more.
+
+## Sources
+
+- ruff `ALL` and `# noqa: <code>`: <https://docs.astral.sh/ruff/linter/>; `extend-select`, `per-file-ignores`:
+  <https://docs.astral.sh/ruff/settings/>; `RUF100` unused `noqa`: <https://docs.astral.sh/ruff/rules/unused-noqa/>
+- basedpyright `typeCheckingMode = "all"`, `failOnWarnings`, `reportUnnecessaryTypeIgnoreComment`,
+  `reportIgnoreCommentWithoutRule`: <https://docs.basedpyright.com/latest/configuration/config-files/>
+- mypy `strict`, `warn_unused_ignores`: <https://mypy.readthedocs.io/en/stable/config_file.html>; `ignore-without-code`:
+  <https://mypy.readthedocs.io/en/stable/error_code_list2.html>
+- pytest `filterwarnings = error`: <https://docs.pytest.org/en/stable/how-to/capture-warnings.html>; `skipif` with a
+  reason and strict xfail: <https://docs.pytest.org/en/stable/how-to/skipping.html>
+- TypeScript `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`:
+  <https://www.typescriptlang.org/tsconfig/>; `satisfies`:
+  <https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html>
+- typescript-eslint `strict-type-checked` and `stylistic-type-checked`: <https://typescript-eslint.io/users/configs/>;
+  `ban-ts-comment` (`@ts-ignore` reported, `@ts-expect-error` with a description):
+  <https://typescript-eslint.io/rules/ban-ts-comment/>
+- ESLint `linterOptions.reportUnusedDisableDirectives`: <https://eslint.org/docs/latest/use/configure/rules>
+- Clippy groups (`pedantic`, `nursery`, `cargo`, restriction lints enabled one by one):
+  <https://doc.rust-lang.org/clippy/lints.html>; `allow-unwrap-in-tests`:
+  <https://doc.rust-lang.org/clippy/lint_configuration.html>
+- shellcheck `enable=all` in `.shellcheckrc`: <https://github.com/koalaman/shellcheck/wiki/optional>
+- Observed in HQ's own repos and another managed repo (the suppression guard, the ratchet, a technical-debt file); no external
+  source read for `--strict-markers`/`--strict-config`, the shellcheck rc lookup, or the guard and ratchet rules.
