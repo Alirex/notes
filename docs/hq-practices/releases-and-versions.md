@@ -13,14 +13,15 @@ How code gets from `main` to the running bot or a published package, and how to 
 [git-worktrees-and-autoland.md](git-worktrees-and-autoland.md); migrations at release in
 [db-migrations.md](https://github.com/evocaslab/hq/blob/main/practices/db-migrations.md); the image side (build stamp, tags equal to the commit) in
 [docker-deploy-config.md](https://github.com/evocaslab/hq/blob/main/practices/docker-deploy-config.md); per-branch changelog files in
-[docs-backlog-changelog.md](docs-backlog-changelog.md).
+[docs-backlog-changelog.md](docs-backlog-changelog.md); libraries other repos depend on in
+[shared-libraries.md](shared-libraries.md).
 
 ## Two kinds of repo
 
-- **Deployed service** (report-bot): a release is "this commit runs in production". No version number to bump; the
+- **Deployed service** (a web service): a release is "this commit runs in production". No version number to bump; the
   identity is the commit, shown by the status route. Tag each deployed commit `deploy-YYYYMMDD-HHMM`: cheap, gives
   rollback targets and "what changed since".
-- **Published package or CLI** (uv_upgrade, templates): a release is a SemVer tag `vX.Y.Z` plus a published
+- **Published package or CLI** (a CLI, templates): a release is a SemVer tag `vX.Y.Z` plus a published
   artifact. The version lives in one place (`pyproject.toml` / `Cargo.toml`) and the tag must equal it; a gate
   step fails when they differ.
 
@@ -28,7 +29,7 @@ How code gets from `main` to the running bot or a published package, and how to 
 
 A web page and its server ship separately (a bundle on disk, a binary or image), and a tab stays open for days. So
 the page carries its own version, notices a new deploy while open, and checks that the server speaks its API.
-Reference: report-bot (`web/jasbot`) and HQ (`web/hq`, `crates/hq-api/src/app.rs`).
+Reference: HQ (`web/hq`, `crates/hq-api/src/app.rs`).
 
 | Piece | Rule | HQ |
 | --- | --- | --- |
@@ -61,7 +62,7 @@ for a newer release on start, never on every call.
 
 ## A `prod` branch for auto-deployed services
 
-When agents auto-land on `main` and a land redeploys the live service (report-bot's `jasbot-web-update.path` watches
+When agents auto-land on `main` and a land redeploys the live service (for example a systemd path unit watching
 `refs/heads/main`), every land is a production deploy that nobody chose. Split the two:
 
 - **`main` stays the trunk**: agents land there as today ([git-worktrees-and-autoland.md](git-worktrees-and-autoland.md)),
@@ -78,7 +79,7 @@ When agents auto-land on `main` and a land redeploys the live service (report-bo
   is an ancestor again. Rare by design: prefer feature flags, or promote all of `main` once it is green.
 - **Not git-flow**: no `develop`, `release/*` or long-lived branches with their own commits; that adds merges and
   drift for no gain with one deployment. A repo with no live deployment (HQ, templates) or one that ships packages
-  (uv_upgrade: SemVer tags from `main`) needs no `prod` branch at all.
+  (a CLI: SemVer tags from `main`) needs no `prod` branch at all.
 - Protect `prod` on GitHub (no direct pushes except the release recipe's actor, no force pushes except rollback):
   a settings change, so a `manual-action` for the maintainer.
 

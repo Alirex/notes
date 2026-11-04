@@ -24,7 +24,7 @@ status: stable
 - Keep a table of prefix → group → module → area in AGENTS.md; a new area gets
   a new module, prefix, group, import and row.
 
-Typical prefixes (report-bot's modules): `q-` quality, `w-` web frontend,
+Typical prefixes (a typical app repo's modules): `q-` quality, `web-` web frontend (not `w-`),
 `g-` desktop GUI run and builds, `db-` migrations, `dk-` docker, `git-` branch
 housekeeping, `setup-` machine setup, `vm-` dev VM (from the laptop), `cc-`
 Claude Code sessions in tmux, `as-` generated assets, `docs-` docs housekeeping
@@ -78,7 +78,7 @@ restart) takes an explicit confirmation argument and refuses without it:
 `rel-publish confirm="no"` prints what it would run and `Rerun with: just
 rel-publish yes`, so an agent cannot trigger it by accident and the rule
 "only with the maintainer's OK" is enforced by the recipe, not only by
-AGENTS.md. Example: `Alirex/uv_upgrade/justfile`.
+AGENTS.md.
 
 ## Repo shortcut
 
@@ -92,8 +92,7 @@ command name; it refuses to replace a command it didn't create.
 Scripts that need the project's packages (`uv run python scripts/<module>/x.py`)
 end with `raise SystemExit(main(sys.argv[1:]))`, where `main(argv) -> int`
 returns the exit code. On bad arguments they print the module docstring (which
-holds the usage line) to stderr and return 2. Example:
-`report-bot/scripts/db/db_cli.py`.
+holds the usage line) to stderr and return 2.
 
 ## Standalone Python scripts (uv)
 
@@ -121,4 +120,18 @@ A notes or docs repo (HQ itself) keeps the same layout with fewer modules: Pytho
 their own tools, and `q-check` is just `prek run --all-files`. Repo-specific checks are `local` hooks.
 Example: HQ's `just/`, `scripts/` and `.pre-commit-config.yaml`.
 
+Which recipe names exist in every repo: [just-recipe-vocabulary.md](just-recipe-vocabulary.md).
+
 Mention new or renamed recipes in the README / docs.
+
+## Sources
+
+- just manual: `import` and `mod`, `[group]`, `[doc]`, `[private]`, `[linux]`/`[macos]`, `[positional-arguments]`,
+  `--usage`: <https://raw.githubusercontent.com/casey/just/master/README.md>; the rendered manual is
+  <https://just.systems/man/en/>
+- `just --show <recipe>` and `just --completions <shell>`: the same manual (README text).
+- uv scripts (shebang, `uv run --script`, `uv add --script`, `uv lock --script`):
+  <https://docs.astral.sh/uv/guides/scripts/>; PEP 723 inline metadata: <https://peps.python.org/pep-0723/>
+- Observed in HQ's and other repos' own justfiles; the prefix-group convention, the
+  `perl -pi` and bash 3.2 advice have no external source (the "last comment line is shown" detail was not confirmed in
+  the manual text read).

@@ -214,3 +214,10 @@ one block; `actions.sh add` refuses a body with no command block (see [Manual ac
 The repo's AGENTS.md says, in one line: questions are `maintainer-question` issues, asked with
 `scripts/docs/questions.sh`, and steps only the maintainer can do are `manual-action` issues
 (`scripts/docs/actions.sh`), rules in this page.
+
+## Sources
+
+- `gh issue close` with `--comment` and `--reason "not planned"`: <https://cli.github.com/manual/gh_issue_close>
+- `gh search issues` with `--label` and `--state`: <https://cli.github.com/manual/gh_search_issues>
+- Observed in HQ (`scripts/docs/questions.sh`, `actions.sh`, the HQ web app, `just cc-watch`); no external source for the
+  workflow, defaults, skip, help and command-block rules.

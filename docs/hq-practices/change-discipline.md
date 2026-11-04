@@ -3,7 +3,7 @@ summary: "Working through one change: end state, data shape first, units that en
 group: agents
 tags: [agents, process]
 applies-to: [all]
-reviewed: 2026-10-28
+reviewed: 2026-11-04
 status: stable
 ---
 
@@ -89,6 +89,21 @@ Measured as trends, not gate stages, after the change works:
 A big `match` or dispatch table scores high on complexity but may be the clearest form; judge it, do not split it
 only for the number.
 
+### Signs a change needs a shape
+
+One more branch, a second boolean that must stay in sync with the first, a nullable mode, a feature check in shared
+code, a thin wrapper that only forwards, or a cast that hides an unclear invariant: each says the model is missing.
+Prefer the table, enum, state machine or the existing helper, in the layer that owns the concept. File it as a
+finding; do not refactor unasked ([Keep the change small](#keep-the-change-small)).
+
+### Tests and comments
+
+- A test passes the two-edits check: break the behaviour and it fails; restructure the internals and it still passes.
+- A failure that appears only after a restart points first at persisted state. Check for the pattern, not just the
+  instance.
+- A comment says why, not what: keep constraints, workarounds with a reason and links. A paragraph-long workaround
+  comment means the code is wrong; encode the constraint (type, check, test) and delete the comment.
+
 ## Commits
 
 Each commit says what changed, why, and how it was checked (the test, the command, the page looked at). Small,
@@ -96,6 +111,7 @@ ordered commits, one unit each ([git-worktrees-and-autoland.md](git-worktrees-an
 
 ## Sources
 
+- pstack (MIT, Lauren Tan): <https://github.com/cursor/plugins/tree/main/pstack> (`principle-test-behavior-not-implementation, principle-fix-root-causes, comment-sicko`)
 - Robert C. Martin, [ub-mode](https://github.com/unclebob/ub-mode) (an agent skill; no license, so only the ideas are
   used here, in HQ's words) and its tools [crapper](https://github.com/unclebob/crapper),
   [dryer](https://github.com/unclebob/dryer), [mutator](https://github.com/unclebob/mutator) (0BSD).

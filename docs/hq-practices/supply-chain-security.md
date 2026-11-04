@@ -11,7 +11,7 @@ status: stable
 
 What keeps a secret out of git, a malicious release out of the lockfile, and a workflow from becoming a way in.
 App-level security (passwords, sessions, 2FA) is in [auth-and-security.md](https://github.com/evocaslab/hq/blob/main/practices/auth-and-security.md), the OWASP checklist in [web-app-security.md](https://github.com/evocaslab/hq/blob/main/practices/web-app-security.md); agents in
-[agent-security.md](agent-security.md); hosts and containers in [host-security.md](https://github.com/evocaslab/hq/blob/main/practices/host-security.md).
+[agent-security.md](agent-security.md); hosts and containers in [host-security.md](https://github.com/evocaslab/hq/blob/main/practices/host-security.md), a VM that serves the internet in [internet-facing-vm.md](https://github.com/evocaslab/hq/blob/main/practices/internet-facing-vm.md).
 Status checked 2026-10; tool versions move, `pre-commit-update` / `just repos-security` show the current state.
 
 ## Rules
@@ -25,6 +25,8 @@ Status checked 2026-10; tool versions move, `pre-commit-update` / `just repos-se
 5. **Workflows are least-privilege and pinned**: `permissions:` set per workflow, actions pinned by full commit SHA,
    zizmor in the gate.
 6. **Turn on what GitHub offers for the repo's plan** and record what is not available.
+
+Private shared libraries (git tag pins, deploy keys, how repos learn of a new tag) are in [shared-libraries.md](shared-libraries.md).
 
 Cloud infrastructure code (OpenTofu state, SOPS secrets, Cloudflare token scopes, Trivy config scan) has its own page: [infrastructure-as-code.md](https://github.com/evocaslab/hq/blob/main/practices/infrastructure-as-code.md).
 
@@ -51,12 +53,50 @@ Cloud infrastructure code (OpenTofu state, SOPS secrets, Cloudflare token scopes
 | Python (uv) | `uv audit --locked` (OSV; flags `--ignore ID`, `--ignore-until-fixed ID`, `--output-format json\|sarif`) | still marked experimental; reports no severity. `uv audit --script x.py` for PEP 723 scripts. Alternative: `pip-audit`, `osv-scanner` |
 | Python install-time | `UV_MALWARE_CHECK=1` | opt-in: `uv add`/`uv sync` stop on a known-malicious package (OSV MAL advisories) |
 | Node (pnpm) | `pnpm audit --prod` | dev tools matter too (they run on the dev machine), but the signal is noisier |
-| Rust | `cargo deny check` | advisories, licenses, bans, sources in one tool ([rust-service.md](https://github.com/evocaslab/hq/blob/main/practices/rust-service.md)) |
+| Rust | `cargo deny check` | advisories, licenses, bans, sources in one tool ([rust-service-tooling.md](https://github.com/evocaslab/hq/blob/main/practices/rust-service-tooling.md#dependencies)) |
 | Any lockfile | `osv-scanner scan -L <lockfile>` | one tool for mixed repos |
 
 - A finding is fixed or ignored with a reason and an expiry (`--ignore-until-fixed` re-fails when a fix appears).
   No silent ignores ([lint-strictness.md](lint-strictness.md)).
 - Audit databases only know what was reported; the cooldown below is the other half.
+
+### Scheduled watch
+
+New advisories appear after a lockfile was last checked, so audit on a clock too, not only in the gate.
+
+- A periodic job (a systemd user timer, or a CI cron) runs the OSV audit (`uv audit --frozen`, `osv-scanner`),
+  `cargo deny check advisories` and `npm audit` / `pnpm audit` per repo. Read-only permissions; in CI the actions are
+  SHA-pinned like everywhere else.
+- A hit files a backlog item (area and priority from the finding) instead of failing silently or paging at night.
+  One item per subject, never a second one while one is open.
+- No indicator-of-compromise scanner until there is a trustworthy feed to feed it.
+- HQ's version of the whole watch, machine and repos: `just setup-outdated` and `hq-outdated.timer` (below).
+
+## Updates by class
+
+Detect everything, install only what is safe to install unattended. A report that nobody reads is the failure to
+avoid, so it is weekly, short, and files an item only when something needs a decision.
+
+| Class | Examples | Policy |
+| --- | --- | --- |
+| Installs itself | OS security channel (`unattended-upgrades`), snap refresh, tools with their own updater | Automatic. The weekly report only flags it when it is still pending after 7 days (the automation is stuck) |
+| Detected, then a recipe | uv and uv tools, Node LTS, hook revisions | Reported weekly; a person runs `just setup-upgrade` / `setup-node` and commits the change |
+| Dependencies of a repo | Python, JS and Rust locks, pinned GitHub Action SHAs | Reported weekly; fixed through a branch or a bot PR and the repo's gate, with the cooldown below. Whether a repo runs Renovate or Dependabot is that repo's decision (`area: review` item), never enabled from HQ |
+| Manual window | Kernel, NVIDIA driver, Docker engine, container images, other apt updates, reboots, anything on the production host | Reported weekly, installed by a person at a chosen time with the services checked after. Never unattended |
+| Never touched | The production app's data directory and database container | Not even to update; the owner repo moves them |
+
+- **Security ranks above "a newer version exists."** Known-vulnerability data is OSV (`uv audit`, `pnpm audit`,
+  `cargo deny`); a hit that is not auto-installed files an item at once, a plain newer version only after it has stayed
+  30 days.
+- The check is read-only: no sudo (so `apt` lists are as fresh as the system's own daily refresh), no installs, no image
+  pulls. Docker tags come from the registry's tag list (one request per image per week); a major-only or local tag
+  cannot be compared and is listed as not checkable.
+- **Each check is isolated**: a missing tool or a network error marks that check "not checked" in the report and the rest
+  go on. A report must say what it could not look at.
+- Alerts reuse the session watch's channel: one desktop notification per security finding, once.
+- HQ: `just setup-outdated` (`--json`, `--only os|snap|uv|node|docker|prek|hq|repos`), `just setup-outdated-report`,
+  the line in `just setup-check`, and `hq-outdated.timer` (`infra/services.yaml`; `just setup-services diff` shows it,
+  the maintainer installs it).
 
 ## Cooldown (minimum release age)
 
@@ -68,11 +108,14 @@ Most malicious releases are found within days. Do not install what is younger th
 - **pnpm**: `minimumReleaseAge: 10080` (minutes) in `pnpm-workspace.yaml`, with `minimumReleaseAgeExclude` for an
   urgent fix. Set it explicitly even where a newer pnpm defaults it.
 - **Cargo**: no native setting; Dependabot/Renovate cooldown on the `cargo` ecosystem, and `cargo update` only
-  in the reviewed monthly commit ([rust-service.md](https://github.com/evocaslab/hq/blob/main/practices/rust-service.md)).
+  in the reviewed monthly commit ([rust-service-tooling.md](https://github.com/evocaslab/hq/blob/main/practices/rust-service-tooling.md#dependencies)).
 - **Bots**: Dependabot `cooldown: {default-days: 7}` per ecosystem (covers `github-actions`, `pre-commit`, `uv`,
   `npm`, `cargo`, `docker`); security updates bypass it by design. Renovate: `minimumReleaseAge: "7 days"`.
   Keep the bot's value equal to the package manager's, or the bot opens PRs the lock step cannot resolve.
 - Security fixes that matter now are applied by hand with the exclusion, after reading the advisory.
+- Hook revisions follow the same rule: no auto-updater hook (such as `pre-commit-update` run as a hook) that moves
+  revs inside the gate. Revs change only through Dependabot's `pre-commit` ecosystem or a reviewed commit, under the
+  cooldown; an updater may run as a report, never as a fixer.
 
 ## GitHub Actions
 
@@ -119,6 +162,9 @@ Per repo, as far as the plan allows:
 
 ## Sources
 
+- Unattended upgrades (security channel by default), snap refresh timing and Docker Hub / ghcr tag lists as used by
+  the weekly check: <https://ubuntu.com/server/docs/how-to/software/automatic-updates/>,
+  <https://snapcraft.io/docs/managing-updates>, <https://docs.docker.com/reference/api/hub/latest/>
 - gitleaks pre-commit hook definition: <https://github.com/gitleaks/gitleaks/blob/master/.pre-commit-hooks.yaml>
 - Betterleaks: <https://github.com/betterleaks/betterleaks>,
   <https://www.bleepingcomputer.com/news/security/betterleaks-a-new-open-source-secrets-scanner-to-replace-gitleaks/>
@@ -131,3 +177,4 @@ Per repo, as far as the plan allows:
 - SHA pinning policy: <https://github.blog/changelog/2025-08-15-github-actions-policy-now-supports-blocking-and-sha-pinning-actions/>
 - Observed 2026-10-25 with `gh api` on HQ's registry repos (private repos on a free plan: rulesets and branch
   protection answer 403 "Upgrade to GitHub Pro"; secret scanning fields absent).
+- Observed in a Fable review of a managed app (2026-11-01); no external source beyond those linked above.

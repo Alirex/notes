@@ -3,20 +3,20 @@ summary: "uv workspace, pre-commit hooks, tool pins, dependency upgrades, techni
 group: quality
 tags: [deps, hooks]
 applies-to: [all]
-reviewed: 2026-10-25
+reviewed: 2026-11-01
 status: stable
 ---
 
 # Tooling and dependencies
 
-Examples: `repo-template` (the starting point) and `report-bot` (the mature
-version).
+Example: a repo template (the starting point) and a mature repo that grew from it.
 
 ## uv workspace
 
 - uv for environments and dependencies; no framework by default; keep usage
   intentional.
-- The workspace **root holds only tooling** (no installable `[project]`):
+- The workspace **root holds only tooling** (no installable `[project]`; uv's workspace page calls the root "also a
+  workspace member", so run `uv sync` on the pinned uv to confirm a tooling-only root still works):
   `members = ["packages/*"]`, the dev dependency group, and tool config. Code
   lives in members (libraries and apps alike).
 - `[tool.uv] required-version = ">=X.Y.Z"` makes older uv refuse to run; CI
@@ -96,5 +96,18 @@ listed in a `TECHNICAL_DEBT.md`: affected files, rules, what has to be done to
 remove it, priority. Intentional exceptions say so. Remove one exception per
 month (a recurring chore, see [docs-backlog-changelog.md](docs-backlog-changelog.md))
 so the repo moves toward strict rules with no per-file overrides.
-Example: `report-bot/docs/monorepo/TECHNICAL_DEBT.md`. Typing ratchet:
+Example: a `TECHNICAL_DEBT.md` listing the open overrides. Typing ratchet:
 [quality-gate.md](quality-gate.md#strict-typing).
+
+## Sources
+
+- uv `required-version` makes an older uv refuse to run: <https://docs.astral.sh/uv/reference/settings/#required-version>
+- uv workspace `members` globs: <https://docs.astral.sh/uv/concepts/projects/workspaces/>
+- prek as a drop-in, pre-commit compatible hook manager installed with `uv tool install prek`: <https://github.com/j178/prek>
+- Hook definitions (`check-added-large-files --maxkb`, `check-executables-have-shebangs`,
+  `check-shebang-scripts-are-executable`, `check-merge-conflict`, `end-of-file-fixer`, `trailing-whitespace`):
+  <https://github.com/pre-commit/pre-commit-hooks>
+- `default_install_hook_types`, `pass_filenames`, `require_serial`, `install --overwrite` and `--hook-type`:
+  <https://pre-commit.com/>
+- Observed in a repo template and the mature repo built from it; no external source for the pin-bump script, dependency groups comments,
+  weekly upgrade chore or `TECHNICAL_DEBT.md`.

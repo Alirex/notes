@@ -2,21 +2,41 @@
 
 Synced from <https://github.com/evocaslab/hq/blob/main/practices> by `just practices-sync`; do not edit here, change HQ's page and sync again. Pinned commit and hashes: `.hq-practices.json`.
 
+- [Evaluating an agent harness with evals](agent-harness-evals.md): Evaluating an agent harness (prompt, tools, skills, hooks, context) with evals: task set from real failures, clean trials, layered graders, pass@k vs pass^k, controlled infrastructure, transcripts read
 - [Agent instructions](agent-instructions.md): Laying out AGENTS.md / CLAUDE.md, subfolder rules and skills
 - [Agent security](agent-security.md): Coding agents: prompt injection, secrets out of reach, sandbox, MCP trust, never-list
+- [Agent workflow: stages and roles](agent-workflow.md): The agent flow made explicit: stages from request to landed, which role (supervisor, worker, reviewer) owns each, and the check between them
+- [Agile ideas for a maintainer-plus-agents flow](agile-lessons.md): What to take from Agile, Kanban and Shape Up for a flow of one maintainer and agents: Definition of Done, WIP limits, cycle time, appetite, weekly metrics
 - [Architecture docs and diagrams](architecture-diagrams.md): ARCHITECTURE.md and diagrams: hand-written views, generated views with an is-current hook
 - [Autonomous sessions](autonomous-sessions.md): Long unattended sessions: /autopilot, questions instead of stopping, cc-watch
 - [Change discipline](change-discipline.md): Working through one change: end state, data shape first, units that end green, when to stop
+- [Continuous improvement: measure, guard, trace](continuous-improvement.md): The improvement loop once (baseline, budget, guard, record), regression guards on noisy machines, traceability from backlog item to error, test-suite and agent-flow numbers
+- [Diagrams as code: tools, validation, process](diagrams-as-code.md): Diagrams as text: which tool per diagram class, a gate that parses and renders every diagram, text alternatives, size limits
 - [Docs, backlog, changelog, decisions](docs-backlog-changelog.md): Docs, backlog, changelog and decisions laid out so parallel agents don't collide
+- [Docs match the code](docs-match-code.md): A change to behavior updates the docs that describe it in the same commit; how to find them and check it
 - [Git worktrees and auto-land](git-worktrees-and-autoland.md): Branching, parallel agents, landing work on main
 - [.gitignore and IDE settings](gitignore-and-ide.md): What .gitignore lists and which JetBrains .idea files to commit
+- [Guards: rules a machine checks](guards.md): Catalogue of rules a machine checks: the guard test, hook or lint per rule, where it exists, copy-ready snippets
+- [Unified just recipe vocabulary](just-recipe-vocabulary.md): One recipe vocabulary in every repo: core names, groups, customising, distribution, drift check, aliases
 - [just task runner](just-task-runner.md): Organizing just recipes and helper scripts
+- [Language choice](language-choice.md): Which language for a new tool or service: Rust by default, Python or shell only for throwaway work, the growth trigger that forces a port
+- [Licensing a public repo](licensing.md): Licensing a public repo with mixed content: MIT for code, CC BY 4.0 for texts, all rights reserved for personal material and brand; LICENSE files, NOTICE, README and footer wording
 - [Strict checks: fix, don't silence](lint-strictness.md): Strictest linters and type checkers; fix findings, never silence them
 - [LLM usage guards](llm-usage-guards.md): Bounded LLM calls: max_tokens, timeouts, input caps, budgets, usage table, cache, fallback
 - [Questions for the maintainer](maintainer-questions.md): Asking the maintainer through issues, defaults, blocking, manual-action issues
+- [Measures of performance and effectiveness](measures-of-performance-and-effectiveness.md): Measure both: MOP (built right, pass/fail limits) and MOE (right thing, outcome achieved); for backlog items, hand-backs and operator views
+- [Prepared commands](prepared-commands.md): Prepared commands for repeated checks (landed, tag, release, gate result): one action, one result line, no invented one-liners
+- [Profiling](profiling.md): Profile before optimizing: the tool per layer (py-spy, flamegraph/samply, Vitest slow tests, EXPLAIN, DevTools), reading flame graphs, slow tests, low-load repeat runs, gate speed budget
 - [Quality gate](quality-gate.md): Lint/type/test gates, heavy-check locking, coverage on changed lines
 - [Releases, versions and rollback](releases-and-versions.md): Release recipe, SemVer or deploy tags, version stamp, update notice, rollback
+- [Research flow](research-flow.md): How agents research a question: brief, source tiers, evidence labels, second reader, model per stage, stop rule, note in the repo, not-taken register
+- [Retiring the old stack](retiring-the-old-stack.md): Replacing a backend piece by piece: freeze the oracle, tag before each removal, test through the new stack, and agent habits that kept the gate honest
+- [Review lenses](review-lenses.md): Named checklists a reviewer applies to a diff (roles as lenses, not personas), gate integrity, and the backlog item as handoff
+- [Shared internal libraries: delivery, versions, updates](shared-libraries.md): Private shared libraries: git tags as delivery, SemVer, how consumers learn of a new version, built-in practices
+- [Specifications for formats and features](specifications.md): Write the spec of an input format or feature before the code: status banner, principles, one sample, what the parser gets, a field table, open questions; the sample runs as a test
 - [Subagents and context](subagents-and-context.md): Delegating to subagents (Claude tiers, Junie) and keeping context lean
+- [Supervisor preflight](supervisor-preflight.md): A supervisor re-reads its standing rules before every start; a hook re-injects a digest after each compaction
+- [Supplement and health evidence research](supplement-evidence-research.md): Researching health and supplement claims with subagents: evidence levels, sourcing rules, blocked sources, no personal advice
 - [Supply-chain and repository security](supply-chain-security.md): Secret scanning, dependency audit and cooldown, Actions hardening, repo settings
 - [Testing](testing.md): Test-first, fixtures, guard tests, e2e, flaky tests, parity tests, throwaway service containers
 - [Tooling and dependencies](tooling-and-deps.md): uv workspace, pre-commit hooks, tool pins, dependency upgrades, technical debt
