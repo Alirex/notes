@@ -6,6 +6,8 @@ tests: the only checks are the prek hooks.
 General practices live in HQ: [evocaslab/hq `practices/`](https://github.com/evocaslab/hq/tree/main/practices)
 (local clone `~/dev/hq/practices`). This file is this repo's binding version; it wins where the two differ.
 
+- The README is the front door: it starts with how to run the repo and is updated in the same commit as any change to a command, recipe, config key, check or layout; run its Quick start once before landing ([HQ docs-match-code](https://github.com/evocaslab/hq/blob/main/practices/docs-match-code.md#the-readme-is-the-front-door)).
+
 ## Rules
 
 - To find HQ practices or backlog items, call the `hq` MCP tools first (`practices_for`, `practices_get`,
