@@ -3,7 +3,7 @@ summary: "Evaluating an agent harness (prompt, tools, skills, hooks, context) wi
 group: agents
 tags: [agents, evals, harness, testing, llm]
 applies-to: [all]
-reviewed: 2026-11-04
+reviewed: 2026-11-07
 status: draft
 ---
 
@@ -22,6 +22,11 @@ checked 2026-11. Draft: HQ has one eval so far (the command guard, example below
   the environment (the file, the database row), never what the agent says it did.
 - **Agent harness** (scaffold): what lets a model act as an agent. **Evaluation harness:** what runs the tasks,
   records transcripts, grades and aggregates. A score measures the model and the agent harness *together*.
+
+**Workflow or agent.** A workflow runs fixed code paths with a model call in each step; an agent lets the model direct
+its own loop. Start with the simplest thing and add the agent loop only where an eval shows it helps: an agent costs
+more and its errors compound. HQ's loops (the stages in [agent-workflow.md](agent-workflow.md#stages), the gate, the
+landing) are workflows with an agent inside each step.
 
 ## Rules
 
@@ -122,3 +127,5 @@ unit tests already pin what the guard does today; the eval adds what it should d
   <https://tianpan.co/blog/2026/02/07/evaluating-ai-agents-trajectories-not-just-outcomes>
 - Observed in HQ (2026-11): the first eval is the command guard's (`just cc-guard-eval`, see the example above); the
   other rows of the table are still proposals.
+- Workflows (fixed code paths) against agents (the model directs the loop), simplest thing first, cost and compounding
+  errors (read 2026-11-07): <https://www.anthropic.com/engineering/building-effective-agents>

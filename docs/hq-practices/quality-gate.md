@@ -5,6 +5,7 @@ tags: [gate, hooks]
 applies-to: [all]
 reviewed: 2026-11-04
 status: stable
+check: "hook: q-check"
 ---
 
 # Quality gate
@@ -121,6 +122,12 @@ On a fully green run on a clean tree, record the tree hash in the shared git
 dir so every worktree sees it. Landing can skip the gate when the tree to land
 has a pass record, or differs from one only in docs (then run just the doc
 hooks).
+
+Key the record by the tree hash **and** the base commit (merge base with the default branch), and print where the
+pass came from (`PASS (cached <sha>)`). A fixer that rewrites files after the hooks passed makes the result describe a
+different tree: report `PASS (dirty)`, store nothing, and treat it as not landable until the edits are committed and the
+gate has run again. Workers stop at the first failing hook (cheap, often-failing ones first); the landing gate runs
+every hook (`--all`) so one run lists all failures. HQ: `scripts/quality/gate.sh`, `gate-bg.sh`, `just machine-metrics gates`.
 
 ## Coverage on changed lines
 

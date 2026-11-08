@@ -54,7 +54,9 @@ pre-commit).
   in review.
 - A justfile formatter hook (`format-justfile`).
 - `pre-commit-update` keeps hook revs current. A gate that runs fixers itself
-  may skip it.
+  may skip it. Where it runs on commit it fails the commit whenever a newer rev exists (and rewrites
+  `.pre-commit-config.yaml`): land the bump as its own `chore:` commit first, never inside a feature commit, and never
+  skip the hook (seen in `evocaslab/ui`, 2026-11).
 - `markdownlint` with structural rules only (`.markdownlint.yaml` turns off line
   length, inline HTML and the like), so existing docs pass.
 - Repo-specific checks are `local` hooks (`language: system`) running a script:

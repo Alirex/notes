@@ -57,7 +57,10 @@ without a changelog: git history is the record there.
   [backlog-priority design](https://github.com/evocaslab/hq/blob/main/docs/design/backlog-priority.md). A small repo ports the rule without the score:
   `parse_priority`, `band_of`, word rejection, `--migrate-priority` and the dependency check, tested against a copy of
   `backlog-priority-cases.json` (typed with pydantic models; the tests import `scripts/docs` through pytest
-  `pythonpath` and basedpyright/ty extra paths, not through `importlib`, which breaks strict typing).
+  `pythonpath` and basedpyright/ty extra paths, not through `importlib`, which breaks strict typing)). A repo without Python tests (a Node site) tests the script as a black box instead: a vitest file spawns
+  `uv run --script backlog.py --dir <tmp>` on throwaway item files and asserts the exit code, the message and the order
+  (evocaslab/site, 2026-11-06); build the script path with `path.join(import.meta.dirname, …)`, since ESLint's `no-undef`
+  rejects the `URL` global in `.mjs` files.
 - **Statuses:** `idea` (worth doing, not planned), `todo` (ready to pick),
   `design` (needs a design doc or answers), `in-progress` (a branch is on it),
   `review` (waiting for the maintainer), `blocked` (waiting on something

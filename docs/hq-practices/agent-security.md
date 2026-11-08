@@ -13,7 +13,7 @@ Claude Code and other coding agents run shell commands as the user, read untrust
 dependency READMEs, tool output) and often work unattended. This page is what keeps that from leaking secrets or
 doing damage. Instructions and delegation are in [agent-instructions.md](agent-instructions.md),
 [subagents-and-context.md](subagents-and-context.md) and [autonomous-sessions.md](autonomous-sessions.md); repository
-side in [supply-chain-security.md](supply-chain-security.md). Claude Code details checked against the docs 2026-11.
+side in [supply-chain-security.md](supply-chain-security.md); the scanners that check it in [security-tooling.md](security-tooling.md). Claude Code details checked against the docs 2026-11.
 
 ## Rules
 
@@ -123,6 +123,8 @@ Where practical give unattended sessions a fine-grained token (contents/PR write
 the personal login (rule 5).
 
 ## MCP servers, plugins, skills
+
+Runbook for unattended and CI runs (flags, caps, Actions): [headless-and-ci-agents.md](headless-and-ci-agents.md).
 
 - Use servers you wrote or that a provider you already trust runs; Anthropic reviews directory connectors against
   listing criteria but does not security-audit them.

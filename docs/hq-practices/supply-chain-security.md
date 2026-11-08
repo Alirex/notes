@@ -5,13 +5,14 @@ tags: [security, deps, ci]
 applies-to: [all]
 reviewed: 2026-10-30
 status: stable
+check: "script: sec-check"
 ---
 
 # Supply-chain and repository security
 
 What keeps a secret out of git, a malicious release out of the lockfile, and a workflow from becoming a way in.
 App-level security (passwords, sessions, 2FA) is in [auth-and-security.md](https://github.com/evocaslab/hq/blob/main/practices/auth-and-security.md), the OWASP checklist in [web-app-security.md](https://github.com/evocaslab/hq/blob/main/practices/web-app-security.md); agents in
-[agent-security.md](agent-security.md); hosts and containers in [host-security.md](https://github.com/evocaslab/hq/blob/main/practices/host-security.md), a VM that serves the internet in [internet-facing-vm.md](https://github.com/evocaslab/hq/blob/main/practices/internet-facing-vm.md).
+[agent-security.md](agent-security.md); the one command that runs these scanners over every repo in [security-tooling.md](security-tooling.md); hosts and containers in [host-security.md](https://github.com/evocaslab/hq/blob/main/practices/host-security.md), a VM that serves the internet in [internet-facing-vm.md](https://github.com/evocaslab/hq/blob/main/practices/internet-facing-vm.md).
 Status checked 2026-10; tool versions move, `pre-commit-update` / `just repos-security` show the current state.
 
 ## Rules

@@ -3,7 +3,7 @@ summary: "Private shared libraries: git tags as delivery, SemVer, how consumers 
 group: deploy
 tags: [release, versions, deps, libraries]
 applies-to: [all]
-reviewed: 2026-11-02
+reviewed: 2026-11-05
 status: draft
 ---
 
@@ -219,6 +219,18 @@ From `auth` 0.2, `keel` 0.1 to 0.3 and `anchor` 0.1, built by parallel Sonnet bu
 - **Never trust "gate passed" from a builder:** the keel builder's pass hid a clippy failure that the supervisor's rerun
   on the merged tree found. The release recipe's recorded pass for the committed tree is the check that counts.
 
+## Using a library in the consumers
+
+From the `ui` v0.28.0 round (2026-11-05: collapsible trigger robust against a host `button:not(.v-btn)` reset, adopted in four apps).
+
+- **A workaround for a library control is a library bug.** Fix it in the library, release, bump every pin and delete the
+  app's override in the same round; a leftover override hides the next regression.
+- **Find consumers by grepping every `package.json`** (and `Cargo.toml`), nested ones included (`web/hq`, `web/jasbot`,
+  `teleporto/web`), not only `*/web/package.json`.
+- **Before keeping an app-local copy of a component or helper, diff it against the library** and adopt unless the
+  divergence is intended; write the intent next to the copy.
+- **CSS that must survive a host reset** is a library rule with tests: [vue-frontend.md](https://github.com/evocaslab/hq/blob/main/practices/vue-frontend.md).
+
 ## Sources
 
 - Semantic Versioning 2.0.0: <https://semver.org/>
@@ -233,3 +245,4 @@ From `auth` 0.2, `keel` 0.1 to 0.3 and `anchor` 0.1, built by parallel Sonnet bu
 - RFC 4231 (HMAC-SHA-2 test vectors): <https://www.rfc-editor.org/rfc/rfc4231>; RFC 2202 (HMAC-SHA-1 and MD5): <https://www.rfc-editor.org/rfc/rfc2202>
 - Keep a Changelog: <https://keepachangelog.com/>
 - cargo-semver-checks: <https://github.com/obi1kenobi/cargo-semver-checks>
+- MDN, CSS specificity (why a host `button:not(.x)` beats a one-class library selector): <https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity>

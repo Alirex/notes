@@ -3,7 +3,7 @@ summary: "Delegating to subagents (Claude tiers, Junie) and keeping context lean
 group: agents
 tags: [agents, context, cost]
 applies-to: [all]
-reviewed: 2026-11-04
+reviewed: 2026-11-07
 status: stable
 ---
 
@@ -106,7 +106,7 @@ Machine-checkable hand-back (for agents that implement or land work; lessons of 
 - end the final report with a block the delegator can check by machine: branch, final commit, gate result, whether it
   landed, and where each lesson was saved (a practices commit or an HQ backlog item with `area: practices`; a note in a
   folder outside a repo does not count, it is lost when the session is archived). The delegator checks it (is the commit an ancestor of the default branch, is the primary checkout clean and
-  level, are gate processes still running; for example a `just q-landed <commit>` recipe) before telling anyone it is done.
+  level, are gate processes still running; for example HQ's `just repos-landed <repo> <sha>`) before telling anyone it is done.
   A report is a claim, not proof;
 - price a slice from the session transcripts (`just cc-cost --by branch` in HQ): an equivalent at API list rates,
   not a bill.
@@ -160,12 +160,13 @@ carried a hand-added `!`, and a title only said what the first brief asked, not 
 
 | Field | Rule | Example |
 | --- | --- | --- |
-| `title` | `<repo>: <verb> <outcome>`, at most 50 characters, repo short name first (it groups and sorts), the repo is always in it | `teleporto: adopt ui and auth` |
-| `name` (short handle) | stable `<repo>-<topic>`, lower case, unique among live sessions; the ledger and the notes use it | `teleporto-libs` |
+| `title` (public, in the sidebar) | `<repo>: <verb> <outcome>`, one topic (a session that works through a backlog is titled by its current item), at most 50 characters, repo short name first (it groups and sorts), the repo is always in it | `teleporto: adopt ui and auth` |
+| `name` = **handle** (stable id for tools and reports) | `<repo>-<topic>`, lower case, `[a-z0-9-]`, at most 24 characters, topic never `work`, `main` or a number, unique among live sessions; the ledger and the notes use it; it cannot change after the start | `teleporto-libs` |
 | Not in a title | item ids, branch names, models, state (running, idle, needs you: the app shows them), `!` or other markers | |
 | Retire marker | the one exception: `[ARCHIVE]` and a space at the start of the title of a finished session the app would not archive (pinned or in use), so the maintainer sees what to archive by hand | `[ARCHIVE] teleporto: adopt ui and auth` |
 | Several sessions for one repo | the topic tells them apart, never a number | `report-bot: remove python writes` |
 
+- Two words only: **title** and **handle** (not name, slug or label). `just cc-names-check --handle H --title T` checks both (no LLM, exit 1 on a break).
 - Name it when it starts (`title` on `start_session`, the bold title line before the call) and rename it when the work
   changes (`set_session_title`): a session that moved from "adopt" to "fix the build" is retitled, or the supervisor
   retires it and starts a new one.
@@ -204,6 +205,33 @@ subtle logic away from it.
   **Apple Silicon macOS only**; Linux prints "not supported yet", and an Intel Mac cannot run it. Elsewhere, point
   Junie at a local Ollama with a custom model profile (`--model custom:<profile>`; see
   [local-llm.md](https://github.com/evocaslab/hq/blob/main/practices/local-llm.md)), which costs no credits but is slow (minutes for a one-line fix).
+
+## Hub and spoke, or peer mesh
+
+Hub and spoke is the default: the caller briefs a subagent, the subagent works in its own window and returns to the
+caller only; subagents do not talk to each other. A peer mesh (Claude Code Agent Teams: teammates message each
+other and share a task list) is the exception.
+
+- A spoke returns a short summary, 1-2k tokens, with `file:line` references; the hub keeps the conclusions and does
+  not paste the spoke's tool output into its own context.
+- Do not fan out coding work that shares files or context, has many dependencies between steps, or has little to
+  run in parallel. Most coding tasks are like that; one agent, or a chain of spokes, is cheaper and safer.
+- Delegating does not make an answer better. A fresh reviewer helps because it has not seen your reasoning.
+- Size by the task: one agent for a fact, 2-4 for a comparison, more only with a written brief per agent (see
+  [research-flow.md](research-flow.md)). Vague briefs made agents repeat each other's work.
+
+| | Hub and spoke (subagents) | Peer mesh (Agent Teams) |
+| --- | --- | --- |
+| Talk to each other | No, only back to the caller | Yes, plus a shared task list |
+| Worth it for | Wide reads, searches, a bounded build in a worktree, a fresh review | Research and review with competing views, debugging with competing hypotheses |
+| Not worth it for | Work that needs the caller's whole context | Write-heavy work, same-file edits, small tasks |
+| Rules from the source | Nesting depth 3 and 20 concurrent by default | Experimental, off by default; each teammate owns different files; 3-5 teammates, 5-6 tasks each; the spawn prompt carries all context; start with review or research |
+| Cost | Tens of thousands of tokens inside the spoke, 1-2k back | More tokens again: every teammate is a full session |
+
+Cost, level MR (the vendor's own internal measurement, not replicated): agents used about 4 times the tokens of a
+chat and a multi-agent system about 15 times; token use alone explained about 80 % of the variance on one benchmark;
+an Opus lead with Sonnet workers beat a single Opus agent by 90.2 % on an internal research eval (see Sources). That result is for
+breadth-first research; the same post names shared context, many dependencies and most coding tasks as a poor fit.
 
 ## Context management
 
@@ -246,3 +274,12 @@ A supervisor re-reads these rules and checks the plan pace before each start; a 
 - Junie CLI `--model`, `--effort`, `--review` (headless): <https://junie.jetbrains.com/docs/junie-cli.html>; the `--effort` needs `--model` rule, the `.junie/skills/` leftover and the per-job costs are observed in HQ (2026-11-04), not in that page
 - Observed in HQ's own use (2026-10; Junie credit costs, tier order, compaction thresholds of 100-130k tokens);
   the `junie` flags `--output-format json`, `--project`, `--session-id` were not found in the pages read.
+- Context as a finite attention budget; just-in-time retrieval, compaction, notes outside the window, subagents that
+  use tens of thousands of tokens and return 1-2k (read 2026-11-07): <https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents>
+- Multi-agent research system: 4x and 15x tokens, 90.2 % on the internal eval (MR, vendor, not replicated), 80 % of
+  variance from tokens, poor fit for shared context and most coding tasks, early failures of too many subagents and
+  vague briefs (read 2026-11-07): <https://www.anthropic.com/engineering/multi-agent-research-system>
+- Agent Teams (experimental): mesh and shared task list, 3-5 teammates, own files per teammate, start with research or
+  review (read 2026-11-07): <https://code.claude.com/docs/en/agent-teams>
+- Subagents return to the caller; nesting depth and concurrency limits (read 2026-11-07; the numbers are the
+  defaults named there, re-check): <https://code.claude.com/docs/en/sub-agents>

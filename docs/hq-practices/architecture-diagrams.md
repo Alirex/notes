@@ -3,7 +3,7 @@ summary: "ARCHITECTURE.md and diagrams: hand-written views, generated views with
 group: docs
 tags: [docs, diagrams]
 applies-to: [all]
-reviewed: 2026-11-01
+reviewed: 2026-11-05
 status: stable
 ---
 
@@ -55,6 +55,27 @@ docs/architecture/
   flows/<name>.md               # a sequence diagram per cross-container flow, participants pinned
 scripts/docs/diagrams/          # the generator and its tests
 ```
+
+## Readable diagrams
+
+Found by drawing a compose, a crate and a unit view for a managed repo (2026-11-05): a diagram that parses can still be unreadable.
+
+| Rule | Why |
+| --- | --- |
+| Split by **question**, not by size: one diagram for the runtime request path, another for start-up order or for the calls to external systems; each has a one-line question in the text above it | a 35-arrow "everything" diagram answers nothing; two 15-arrow ones do |
+| Put detail in a **table** under the diagram (memory limit, ports, volumes, when a timer fires); the node label is the bare name | long labels make boxes wide and the layout cramped |
+| Leave out the arrow everyone has (every crate uses `core`, every service logs) and say so in one sentence | those arrows cross the whole picture and carry no information |
+| Draw layers as nested `subgraph`s (entry crates on top, leaves at the bottom) for a crate or package graph, and let the generator fail on an arrow that points up | the shape then shows the architecture, and the layering becomes a check |
+| No HTML in labels (`<b>`, `<br/>`): GitHub's renderer shows some of it literally and screen readers read the tags | plain text is the only form that renders the same everywhere |
+| Give each palette role one **emoji** at the start of its label (person, service, store, timer, outside system), listed in the legend; shape and colour stay the meaning, the icon only repeats it | the role reads in greyscale and for colour-blind readers, and a screen reader says the word |
+| **Group** with `subgraph`s by tier (outside, entry, application, data), draw an edge that exists only under a compose profile **dotted**, and put `%%` comments on the arrow key and each section of the source | the picture shows where a thing lives and what is optional; the comments help whoever edits the generator |
+| Render the block to PNG in headless Chrome (the pinned Mermaid of the render hook) and look at it once per new diagram | the parse check cannot see crossing lines or an unreadable label |
+| A generated page ends with the same legend as the hand-written ones, and names what the generator could not know (calls no compose key states are a short table in the generator, validated against the real service names) | the generator then fails when the table names a service that is gone |
+
+Pick the extra diagram kinds by what they answer: a **sequence** page for the two or three flows a newcomer asks about
+(a request, a sign-in), participants pinned; a **state** diagram only when the states are an enum; an **ERD** only when a
+test can build it from the migrated schema (it needs a running database, so never in a commit hook); a **class**
+diagram never, as above.
 
 ## Which views
 
@@ -164,6 +185,23 @@ tests can feed it a temp tree. HQ's: `scripts/docs/diagrams/diagrams.py`, run as
 - **Labels**: always quoted, `"` written as `#quot;`, backticks stripped (Mermaid reads backtick strings as markdown);
   node ids reduced to `[0-9A-Za-z_]`.
 
+### Generated blocks inside hand-written files
+
+A generated table or paragraph may live inside a hand-written page (a README index, a "Learn this" block at the top
+of a page) between two marker comments; the generator replaces what is between them and leaves the rest alone.
+Lessons from HQ's practices index (`scripts/practices/practices.py`):
+
+- **Render once, consistently.** When the generator also derives data from the files it writes into (a catalogue with
+  each page's word count and body hash), compute that data from the text *as it will be after the splice*; otherwise
+  the first run writes the block, the second finds the catalogue stale, and the is-current hook fails every other
+  commit.
+- **A missing block is inserted at a fixed anchor** (after the H1), a present one is replaced in place, and an empty
+  block removes the markers; a hand-written source that lost its markers is a check failure, never a silent skip.
+- **Staleness between a file and what it describes is measured on the hand-written part.** "A changed after B" by git
+  dates must strip the generated blocks from A's history first (walk the commits back to the last one whose stripped
+  text differs), or every regeneration counts as a content change. In tests, give the commits distinct
+  `GIT_COMMITTER_DATE`s: commits made in the same second compare equal.
+
 ## State machines pinned to code
 
 A state diagram earns its place when the code keeps named states and rules for moving between them. The test parses
@@ -228,6 +266,13 @@ Each boundary named in `ARCHITECTURE.md` gets a check that cites it:
 
 - **No compose, no database** (a CLI, a library): `ARCHITECTURE.md` with the codemap and a context diagram; a
   workspace graph only past four packages.
+- **Static site** (Astro, Hugo, plain files on a CDN): two hand views are enough. Containers are the build, the content
+  and data files, the checks that read the built output, and the host (with its edge services such as cookieless
+  analytics); data fetched at build time or by hand is a dotted arrow on the context view. The page rules (review
+  date, `accTitle`/`accDescr`, no `style`, no thick arrows) can be a 40-line script in the repo's own language run as a
+  hook, when the template's Python check is not wanted ([evocaslab/site](https://github.com/evocaslab/site) did this
+  2026-11-06); it passed the pinned Mermaid parse and render check first. A prettier hook may rewrite a new script:
+  run the formatter before the gate.
 - **Desktop GUI** ([desktop-gui.md](https://github.com/evocaslab/hq/blob/main/practices/desktop-gui.md)): containers are the app process, background workers, the local
   store, and any service it calls; a state diagram for the main window's modes when they have rules.
 - **Bigger than Mermaid fits**: [D2](https://d2lang.com/) (MPL-2.0, better layouts) with the SVG committed and a
@@ -272,5 +317,6 @@ check, landing.
   (2009); Mermaid [classDef](https://mermaid.js.org/syntax/flowchart.html#classes) and
   [accessibility options](https://mermaid.js.org/config/accessibility.html); C4 model
   [checklist](https://c4model.com/diagrams/checklist) (title, key, one level, labelled one-way arrows).
+- Field notes: one managed repo's architecture views (2026-11-05), the `<b>` and 25-arrow findings above; C4 checklist as cited.
 - Write the Docs, [Docs as code](https://www.writethedocs.org/guide/docs-as-code/).
 - Animated, interactive explainers for learners: [visual-explainers.md](https://github.com/evocaslab/hq/blob/main/practices/visual-explainers.md)
