@@ -3,7 +3,7 @@ summary: "Laying out AGENTS.md / CLAUDE.md, subfolder rules and skills"
 group: agents
 tags: [agents, claude]
 applies-to: [all]
-reviewed: 2026-11-02
+reviewed: 2026-11-07
 status: stable
 ---
 
@@ -108,6 +108,18 @@ argument names, ask for records that were deleted, and call a tool by the wrong 
   cap the output (about 20,000 characters) and validate the arguments (plain repo and date patterns); a JSON mode
   where one exists.
 
+### Design the tools for the agent
+
+- Few, high-impact tools: one tool per task the agent has (a session-start tool, a search), not one per API endpoint;
+  overlapping tools make the agent pick wrongly. Consolidate multi-step lookups into one call.
+- Offer a concise/detailed switch (a `response_format`-style enum or a `limit`): the default returns what the agent
+  needs to decide, the detailed form adds the ids for follow-up calls.
+- Fix-it error messages: say what was wrong, the accepted values and what to call next; an opaque code costs a retry.
+- Cap the output and say how to narrow it. Claude Code warns when an MCP result passes 10,000 tokens, cuts at 25,000
+  tokens by default (`MAX_MCP_OUTPUT_TOKENS` raises it; the warning threshold is fixed) and saves a text result over
+  50,000 characters to a file unless the server raises that tool's own limit. Keep a tool well below that: paginate,
+  filter or truncate with a sensible default, and let the truncation notice point to a narrower call.
+
 ### Roll the rule out and verify it
 
 - Skills and the "read when" tables name the MCP tool first and the `just`/file form as the fallback, so the wording
@@ -123,6 +135,38 @@ argument names, ask for records that were deleted, and call a tool by the wrong 
   bad lines skipped and counted, per day, tool, client and repo (from the working folder, a worktree mapped to its
   repo), failures, p50/p95; never arguments or results.
 - A missing log is an empty state, not an error; a card on the existing machine page beats a new route.
+
+## Writing a skill
+
+A skill is a procedure an agent loads when the task matches. Rules (Claude Code behaviour, read 2026-11-07; see Sources):
+
+- Three loading levels: the description is always in context (cut at 1,536 characters), the `SKILL.md` body loads
+  when the skill is invoked, supporting files load only when the body points to them. Put the trigger ("use when ...")
+  in the description, the steps in the body, long tables and examples in supporting files.
+- Keep `SKILL.md` under 500 lines. After a compaction the latest invocation of each skill is re-attached, the first
+  5,000 tokens of each and 25,000 tokens in all, so a long body is cut where it matters.
+- A skill with a side effect (deploy, publish, send) sets `disable-model-invocation: true`: it stays out of the
+  model's context and runs only when a person invokes it.
+- `context: fork` runs the skill in a subagent without the chat history: its text must stand alone, with every path,
+  command and decision it needs.
+- `allowed-tools` only pre-approves tools; it does not restrict the rest. Project skills apply it even in an untrusted
+  folder, so review the skills of any cloned repo before opening it ([agent-security.md](agent-security.md)).
+- A rule that must never bend goes into a hook or a deny rule, not into the skill or the instructions file; prose is
+  followed most of the time, a hook every time ([guards.md](guards.md)).
+- The "stop doing" list from the Claude Code docs applies here too: no ALL-CAPS emphasis, no long architecture prose;
+  the defaults are usually right.
+- Trim by evidence: a skill nobody invoked costs its description on every turn
+  ([subagents-and-context.md](subagents-and-context.md#eager-overhead)).
+
+## Bind pages by task kind
+
+A repo's binding line of a few pages out of 100+ applicable ones is too thin: sessions open only what the line names
+(measured 2026-11-07 on a new web app: 7 of 107 bound, the rest rarely read).
+
+- The repo's AGENTS.md holds a table "task kind → pages to read first" (UI, auth, sync, server, LLM, release and ops),
+  under 15 lines, from `practices_for <repo>`.
+- The slice or item template has a "Pages to follow" section, and the hand-back ends with "Pages followed:".
+- Measure with `just cc-adherence --project <name>` before and after.
 
 ## Prepared commands
 
@@ -180,3 +224,14 @@ Example: a dotfiles repo with a `claude/memory/<project>/` folder per project.
 - AGENTS.md as a shared format, nested files with the closest one winning, support in Codex, Cursor and Junie:
   <https://agents.md>
 - Observed in HQ and the repos it manages (the size target, the MCP call-log failures, the "read when" table, the dotfiles sync); no external source.
+- Skill loading levels, description cut at 1,536 characters, 500-line guidance, re-attachment after compaction (5,000
+  and 25,000 tokens), `disable-model-invocation`, `context: fork`, `allowed-tools` (read 2026-11-07):
+  <https://code.claude.com/docs/en/skills>
+- Defaults are usually right, the "stop doing" list, unbendable rules in hooks (read 2026-11-07):
+  <https://code.claude.com/docs/en/best-practices>
+- Tool design (few high-impact tools, concise/detailed switch, actionable errors, 25,000-token default cap) (read
+  2026-11-07): <https://www.anthropic.com/engineering/writing-tools-for-agents>
+- MCP output limits (10,000-token warning, 25,000-token default, `MAX_MCP_OUTPUT_TOKENS`, over 50,000 characters saved
+  to a file; a server raises one tool's limit with `_meta["anthropic/maxResultSizeChars"]` in its `tools/list` entry,
+  up to 500,000 characters, and that value replaces `MAX_MCP_OUTPUT_TOKENS` for the tool's text; images keep the
+  token cap) (read 2026-11-07, section "Raise the limit for a specific tool"): <https://code.claude.com/docs/en/mcp>

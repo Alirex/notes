@@ -1,0 +1,49 @@
+# What this repo needs, by context. Schema and rules: HQ practices/needs-by-context.md.
+# Notes only: no code and no CI workflow, so the only context is develop (edit and run the hooks).
+# Check:  scripts/needs.py lint && scripts/needs.py check --context develop
+# Render: scripts/needs.py render   (the README table between the needs markers)
+version: 1
+needs:
+  - kind: tool
+    name: git
+    contexts: [develop]
+    level: required
+    why: version control and worktrees
+    check: command
+    fix: install git
+  - kind: tool
+    name: uv
+    contexts: [develop]
+    level: required
+    why: runs scripts/needs.py and installs prek
+    check: command
+    fix: curl -LsSf https://astral.sh/uv/install.sh | sh
+  - kind: tool
+    name: prek
+    contexts: [develop]
+    level: required
+    why: runs the quality gate hooks
+    check: command
+    fix: uv tool install prek
+  - kind: tool
+    name: node
+    contexts: [develop]
+    level: required
+    why: markdownlint and prettier hooks need Node.js on PATH
+    check: command
+    fix: install Node LTS (https://nodejs.org)
+  - kind: tool
+    name: gh
+    contexts: [develop]
+    level: optional
+    why: pull requests and pushes to GitHub
+    fallback: use the GitHub web UI
+    check: command
+    fix: install GitHub CLI, then gh auth login
+  - kind: network
+    contexts: [develop]
+    level: required
+    why: push to GitHub; prek fetches hook repos on first use
+    check: url
+    hosts: [github.com]
+    login: gh

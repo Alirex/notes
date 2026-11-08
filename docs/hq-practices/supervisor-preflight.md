@@ -30,7 +30,7 @@ not the standing rules, and a long context weighs recent turns over a rule read 
 | Rule in `CLAUDE.md` only | loaded at start, summarized away | 0 | what failed |
 | `SessionStart` hook, matcher `compact` (verified: a headless `/compact` fires `SessionStart:compact`) (and startup, resume, clear) | after every compaction and new session; plain stdout becomes context | the digest, about 450 tokens | chosen: the drift came after compactions |
 | `PreToolUse` hook on session-starting tools, `Workflow`, `Agent` | right before the start; `additionalContext` carries the live pace | about 80 tokens per start | chosen: the moment of the mistake |
-| `PostCompact` hook | after compaction, but has no context output (side effects only) | n/a | not usable for this |
+| `PostCompact` / `PreCompact` hook that saves the summary's key facts | after or before compaction; no context output, side effects only | a file to keep in sync | not done: every fact a supervisor loses (ledger sessions with model and branch, claimed items, open requests of the session, stale flow sessions, pending branches, deadlines) already lives in a file or git and is re-derived by the `compact` digest (`preflight.sh digest`, at most 40 lines, no LLM); a saved summary would be a second copy that can go stale |
 | Blocking `PreToolUse` (deny until `/preflight` ran) | session starts and `Workflow` | one retry when forgotten | chosen for `start_session`, `hand_off_to_session`, `Workflow`: `/preflight` ends with `preflight.sh mark`, valid 30 min; `Agent` stays a reminder (too frequent). The gate checks twice: the mark (30 min) and the machine's room (`capacity.py --json`, cached 60 s): `start_session` and `Workflow` are denied when room is 0 or memory is strained, because a mark younger than 30 min says nothing about the machine now (2026-11-04: a worker started inside the window, load 86, swap 44 GB). Every gate call shows the room line; unreadable capacity allows with a note |
 
 Chosen: the first, third and fifth together, both in the project's `.claude/settings.json` (`scripts/claude/preflight.sh`).
@@ -54,6 +54,12 @@ tell the maintainer which subagents ran. They are in the digest. Two more from 2
   the session's real model in its note ([subagents-and-context.md](subagents-and-context.md#pick-the-cheapest-tier-that-works)).
 - After hours a supervisor compacts and forgets its pending branches and deadlines: it keeps a ledger file and
   re-reads it after each compaction ([autonomous-sessions.md](autonomous-sessions.md#run-several-repos-at-once-the-fleet-supervisor)).
+  The `compact`/`resume` digest prints that state itself (R-2611080415-196a): live ledger sessions with repo, branch and
+  model, claimed items, branches not yet landed (`fleet-round --offline --brief`), this session's open requests (the
+  count and the newest four, with the `docs-requests check --session` command), the first line of
+  `cc-flow status --stale`, and the deadlines. Baseline before this change (`just cc-adherence`, 7 days, 104 compacted
+  sessions, rules preflight-before-start, model-set, no-sleep-loops): 0.64 misses per active hour before a
+  compaction, 0.62 after, miss rate 0.005 before and 0.008 after; measure again after a week.
 
 ## Sources
 

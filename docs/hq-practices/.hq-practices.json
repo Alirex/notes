@@ -1,75 +1,95 @@
 {
   "source": "evocaslab/hq",
-  "commit": "e999c53a45cb5e828261296ad68a78af694c8486",
+  "commit": "f90fb803e3ce033f7047c9bf3cec609af1622b5f",
   "audience": "Alirex/notes",
   "pages": {
     "agent-harness-evals.md": {
-      "source": "894bc302497c1da8df1eb3772de683373b6f094eea59efb7d1e84c9dcd296a3c",
-      "file": "7862367d3e533b71cddf486d0fcd8dc5faf043d8837c5322064e36444b03b61f"
+      "source": "5f5872086b20167e639a717a4ed64dcedbce08da69a8aa675718bc5ecab9b468",
+      "file": "a3faa5132481154fe6b5734c2f0830914427155050f6eac2878ab49b145a3c68"
     },
     "agent-instructions.md": {
-      "source": "fa6c838c2324a32027450948e45e8754239c344eb1ff2406243537dd8a0c1a04",
-      "file": "47f762883e1d590faf19ecf7e708caa3709052c8edddf3e3f1fad17f4de40cbe"
+      "source": "95e9740fde964d27542be82845ba75ed33d1fa6d40f85c3ac8cd4f810385edc3",
+      "file": "23cd03743782bd1da74e9f300317fd6d6a89021c3c026f6a97cbc1b7e1e87fa9"
     },
     "agent-security.md": {
-      "source": "09113972b76c7265bf9415f6412f6e1c90cc2a87dee3a3d3e8a31cbc0dce66ee",
-      "file": "eb901e329df767a7c192e72e541ce2fddaa65c5c14c309cb36f8b9bc38660054"
+      "source": "549665b9a098ecd33fbbddddce18dcefadd5f37da0a0c73fa980109cafb274e9",
+      "file": "a424dd9f451b576b15ab9894895423c333dd8efba0e5b8dfa8f47c3815fefde6"
     },
     "agent-workflow.md": {
-      "source": "3a36a7982869ef1eaaa89b58037c271be7dc28c4002ba8960d0e11d22c118f5b",
-      "file": "8da30efccf4dcd7991ac9249717ffbfd8e02c86073f01474ff35f9efcdb45371"
+      "source": "f7c022b7723520a92e3b5daea9a3b8b45acdb871203007e7799b0ef9d7ff8c2a",
+      "file": "d0d234c29afe06b1eec7d4a29d70c1cc7aaf7fc70073e0cc27a19d4890e04795"
     },
     "agile-lessons.md": {
       "source": "311c2f2fe710df77a0a5452cff602fd5a1ebffdf10867722ed37ce2f2a2c6a15",
       "file": "51aebfa37eeda99c9c4a16178e800fb79592ac2440ab96233f9152a0e4210de2"
     },
     "architecture-diagrams.md": {
-      "source": "1d51d799e1a064defc0427e3f5aa4e149bf46720ec9196ed776737219e53950b",
-      "file": "9ea022862f8c70c914f499fad8f1f2aca7c9ab5b93b7ca94bf4450322062b13d"
+      "source": "36771313031b616efa3c7afa20b22e151b73da655e93a4d1345e8b65a6514bad",
+      "file": "971c52708cd98b1a215a1ceb6f2ae12b55641a17fc56c97a2c0aeb171d65c732"
     },
     "autonomous-sessions.md": {
-      "source": "72afccfcdd4452f4a32a125c33cfab4838ef4bfc191447fe90e7afca86aa791e",
-      "file": "9693a5d7ff6c20a03accd578f77d1622525ff8d1e6ddaad9e4577bd137d8f672"
+      "source": "9b4261feac119ca7362092c4f020d0f70fcf64b8a9d29e3d2964314c137363d1",
+      "file": "43d744e579d59a9eacfec10254841d80a8a97d2204f75ed5a52ba79158608b7e"
     },
     "change-discipline.md": {
       "source": "254c91b755a24db4a13c8c074ae3ef0aaa60fd9bb9e30898a4b5c5c0711b3c1e",
       "file": "7af9910243d898c18d24921ef457c417dfcfa54178c2e06892d9210d5d98e91c"
+    },
+    "claude-hooks.md": {
+      "source": "0ff0b3aaf29fbd2b048d6303d57a2b95cc3b2e4ee47203db1f8e209f9ee7ca09",
+      "file": "635e4a5307edf6539de2579086211d3e0e6d747eb3e826a0e87bd59a70c6055e"
     },
     "continuous-improvement.md": {
       "source": "9eebe5a2d1077e4d29bd1659c1b2579e78e22883218db462794ee2da1fef346f",
       "file": "a95bca39ada0a32593b8913d9a013be38265c94b71aecd33c34c9e7b2b1e7085"
     },
     "diagrams-as-code.md": {
-      "source": "5e202fe9f4cd7bf97d2833653b93419ba7444104a8b5a03f02438caebfb7a1a3",
-      "file": "7bb26b6dc8fbc7ff79490a931632c3124893c3c4ec2534e4e573b0cb7056faea"
+      "source": "7b1f8d5325861bc4cd81ba63160e855a65b1975d331bf677152c7c84a62a0962",
+      "file": "906f97a0f390f9facdd2bfbdc40ac42d8a134ca15234b2f876ea336af7f33cd5"
     },
     "docs-backlog-changelog.md": {
-      "source": "37756efc01db101368dc248ec330cfab0882c47fed6e85caa070f96e311e3052",
-      "file": "cb1a3524c8ea76f54303360ec684d09c3b7f4b2a2ffb16039ee8f32236eb95ff"
+      "source": "1bb37af9941eb220f9e91e2ce5053af7c9e222d2eea7c70ed024e53656aa7ed3",
+      "file": "afb239e1d9bd05e5669284c430fabb1813326070bb2d6b194d9125078c332a9b"
     },
     "docs-match-code.md": {
-      "source": "0319bc29c424b9152ae1cd4928fd455a71f2dcfbfbada27e74632560623a3c3b",
-      "file": "2a06ff5572a2ad3ee320b6c80abfefd845f69f289561bcd339603eab5d13ee0b"
+      "source": "e0bc18214ae05300185f7c164da145104a5b1c932dbb406ec265991fc0502db2",
+      "file": "d44912eaad2a0b1cefdf887aecd28e543df50ed2d87cdc4c7a9b825f0040c14c"
+    },
+    "fleet-information-flow.md": {
+      "source": "d56feeb78928211e61a93cff7fdd44c95435eaffcdfe5ca9311eb15c3df54175",
+      "file": "78fd3a50da28e8e956ffeeea06d23dd460ab77dab9062c1dfb4dd6812d0992d7"
+    },
+    "flow-versioning.md": {
+      "source": "541343b7f1e10db0ea46ff3c9c6f8e1e9fade3329874a30e63aa30ed81a15a5f",
+      "file": "67c3543f2c0f12a90aa043273c445b62dd4daa1c4455bb24844abe750f8fd0e0"
     },
     "git-worktrees-and-autoland.md": {
-      "source": "a9d0177ee95c704a137056679c37b2ff64d8c2b717afb319bd283cbe721464e8",
-      "file": "749a3680fda01e6136ad195128525b647e80f2499b035a77f588f8105dbe8344"
+      "source": "97336795e8df85b66f7690879d2ec982c440a9fb827ce1c7012479c8d70aad07",
+      "file": "ccbc316008f40fca5b7a0f7c0fd2b2857e94e22500f1af90c69e860791dc0819"
     },
     "gitignore-and-ide.md": {
       "source": "b7e712744e8c98ac4077fb045f85484c6c84aa88209388df7678b8901d297735",
       "file": "8439b117f953f5bb7f9109adb46d83e6e8e5ef4f304cc78f003fd416c7e272b2"
     },
     "guards.md": {
-      "source": "f49e59adeabd54eadde1fa9417ea51a10379f8fcd6266ce05615f748f80235a2",
-      "file": "fa1410a522af81bf158a1cfa27d0bf3610c47092365e56d33a4c847824633c8a"
+      "source": "58472bb57640a6930ff3780aa4181b80f9b09e89051416ff1675ed9dd4561b0a",
+      "file": "07330875373df842fac7009d3e3d86b9c7c78b1729bde78efe950b2870c3f8a6"
+    },
+    "headless-and-ci-agents.md": {
+      "source": "098622fc9c15fcc7821d0fc5fc71531bd969e641daa5a5fe80eb5396f69558f2",
+      "file": "c3ad36c8442dada4d44be867c928866089f95e4a129a39359173732ecfdd7698"
+    },
+    "heal-after-interruption.md": {
+      "source": "c9e1988493e6ebc00c09ccaa8d1f79ed9f9dd1f9154c84b24a9e0ec1d62059cd",
+      "file": "7b59d1033f839d10b5645c72133cdb3ef6663112027c4287541690a35b06f5a6"
     },
     "just-recipe-vocabulary.md": {
       "source": "a6c206bf9dcd6676c853ebb330c61fac914471f9e87fd8022a1637675a6184fa",
       "file": "d1a1f6d078c95bf44a2395f254e71d4a1f00e985b05e2d6a92d001474a076d96"
     },
     "just-task-runner.md": {
-      "source": "cffc497de5cce8f255a485c100930618096d5f1593daa3e65fbc362945e0cf16",
-      "file": "42dddc3419cace4cdddbb60d604508360ac657e183d7bccd4cff58077a66542a"
+      "source": "0c027536202d713622dff210a56d67db09d5ccb62ae19644949699f0a9b8ef8a",
+      "file": "46d00ed0afaacfafaeba5110075ee48a8a1700dd29410f55cb6a77f74720b923"
     },
     "language-choice.md": {
       "source": "06b2a42a2a8b00ed60aa5e591cae06e19f606baf87da77efa0be97faeb66ced7",
@@ -80,8 +100,8 @@
       "file": "c2dfe701e9291a21e31c43272f902562e4b29ea726f71edf73be69d86fd78fcf"
     },
     "lint-strictness.md": {
-      "source": "068284fa3b298881a903db905f7e5cd062994687836361c017f9b2056a4e5085",
-      "file": "2b23e0d128eba935091b1371716ad001fe3746f1e80316ff02609a2f2312b4a9"
+      "source": "7b8d3cb8483c84082e8798d852e53ea2c2e87d3cd72bcfecac335d733e18ee04",
+      "file": "ca80832147dd540090a502ac2b774354317da62d32d8bec29bac251d0cef9f00"
     },
     "llm-usage-guards.md": {
       "source": "c057d375eb36d3b815ee925c80f1301db27e33fa5fe94d6d32a843419cabab1e",
@@ -95,17 +115,21 @@
       "source": "7fea03f9e26d3a752de48847b523c5cf69388d4c7ad42f19d5d5432a947807e6",
       "file": "97488af4e454c02320abee8a18318ecbef567d19e727d57f735c6be35e13605b"
     },
+    "needs-by-context.md": {
+      "source": "f865ca80676f9876512c1fbe033d5a9c17e908a3907054c1d0f953042c604ecc",
+      "file": "3398bb1a38fae69e25763c1a680950a541a510808b6c1489f6b7b0f65d9de7a8"
+    },
     "prepared-commands.md": {
-      "source": "27ab7727140bbb0700f935b75b56fe7c358b162418bdb639037232a33f0a1886",
-      "file": "4561ef2f6b4605c9f983b0445883052dabcc4570fca566589cd85f9cd9a4f300"
+      "source": "9bdd85dacf15df4e30968ed337da153d845c293c3ce3d21e165fab90f77394eb",
+      "file": "ecfacf513aa2a7bc581804995157f813f2e74fb5dfb2aff9dd86108d38f4c1eb"
     },
     "profiling.md": {
       "source": "e09989001084703f5c56868c455bf340f3dc9753f7d17b23d2bfd804c5f16ca6",
       "file": "84050f9bacef63db85f521f96811678b887ceca15d2e9857c6977e06bb77d6e7"
     },
     "quality-gate.md": {
-      "source": "442b18da334b93681e208d12c34bd9539832c98b53f708c444973cd488f5d76a",
-      "file": "f6de086dc221c7f51ffbf5355dfb2c86f02b27cdf802ce2ecd6dd1297217ed81"
+      "source": "0dcd2e157b90d4dd7f0b9ae7410799e334a50e6de5c5f0523b6863537baa2e95",
+      "file": "ff4e28ef1c63d6b7e7727703128aea8bddb245046c208d17b11bdc37ec9563a4"
     },
     "releases-and-versions.md": {
       "source": "143c2df75503bb7a7da5f90b786598a0b9fb1832fca3b35c3f2a3fddc76a15c9",
@@ -120,40 +144,60 @@
       "file": "aa3be2d1b6c47511f99b72b159b0b94b651ce6564a337d04eaf2b16298e53fa5"
     },
     "review-lenses.md": {
-      "source": "eb1f101f26246b21927356cc275bd8e5a14e8f72f40dbad8176e1b8ccd01a9f8",
-      "file": "d74390bca233553570cb8f268eb2e07191f3cd17d37f2e72c0d4ee21b4101245"
+      "source": "8d1ff0bbfb5d19a49ae6b2395aac5b357576decb3822ea81f467ad64be611432",
+      "file": "c444112e770c6ec5ea880cc0dbbf26c6529ff5ca7a2a820947dddfffc387b296"
+    },
+    "security-tooling.md": {
+      "source": "4704384554ab4a5e55ccad34e22637b7f59a733fa8af6c3af4407ebe7078831d",
+      "file": "bcd8bb23cdd087a923f0fbf34f1615f4ddbdfb4a7d569fd573e7401a6b6654ae"
     },
     "shared-libraries.md": {
-      "source": "0bcff612bd4eb5efbb266863ff218583bc6e8022a32f0055bbd5b617c4823928",
-      "file": "2aa22444c8178be5d52bdbf6340323680e211fd2da81783023a5038218b94626"
+      "source": "589e9ad972883ece035e26ffafa887f35e2d8c8b1982594822447894866423c2",
+      "file": "32f9c7a2a8493e4ff682103c7cb34ec562530706b414b820745e8327875a496b"
+    },
+    "sharing-local-pages-over-https.md": {
+      "source": "9da23ce037162dda8bbe116dfd548370dbcd9557886188b497fd8af23be6cee8",
+      "file": "aa41d3ceafa0066138d90966501125db068667d913947fa63011fbaa975c0c1d"
+    },
+    "spec-driven-work.md": {
+      "source": "71bbc08dbc62e1c68dc6aae1ec4e6e93dcbaa1580bb0806d6c520f24b3dcc110",
+      "file": "a7017aa38665e66d788090c1de35b1b5eb430a2d2d6810a6cfc3e4e0aa34f71a"
     },
     "specifications.md": {
       "source": "9ee481eef154a2dea31a178ad6c4e261f86fecf4d51887a98028d0535c6be1e7",
       "file": "5cf661374cb7d0b2b93b51b2b650471fcfb33eeef17701aa74229ab3786dc082"
     },
     "subagents-and-context.md": {
-      "source": "6ed9fb70004db0bd1964f0fd52aa9a9ec147b26794f10f103ca7834aa054cee8",
-      "file": "f3dfdaf8880e519d1cbc29391ec7c8da7fd75ca4434792dabdc6db72b9c95edd"
+      "source": "0ba55aa0073eb312309dd1addf17516cd005d0ad2588112c6364d941c83e7e33",
+      "file": "437a6380509c2992f38a56f5b45e56830a045d0aa85b65913f1735e6280e8e06"
     },
     "supervisor-preflight.md": {
-      "source": "915032570cc84eb3095fecca1c2953b22a791d470660973b88602d808f5d9ea6",
-      "file": "ac40d23ea5b0e040cc7e7847cbc6464fa5707997fa303081319e499f2b23923e"
+      "source": "9f1eb349023ebc1cb6811dd4c4e46d58a5cb2c4165bf4eee389072e767c20866",
+      "file": "526c6cfefd9ec1c2d004acbc3bb4116eed4cdacfcd8f1ab0836f0dc8d0dcf553"
     },
     "supplement-evidence-research.md": {
       "source": "493c84bb0d99da39344a4621564edcf2b2b73b9491cb4be37d2b4867d0559a9f",
       "file": "5e1d48d6e568afa241a4840dfdc7a2c85041c8930bb8b09691e63dbae1229264"
     },
     "supply-chain-security.md": {
-      "source": "eb8e2cbc02748441f85a6a52e45d4b18c83814cebe595894025808d78f459cbd",
-      "file": "06a288d60753598cf51346c75e41864115875390e3b8cfcda0f99cc261c8a5e4"
+      "source": "868e30775fe212d3e62693cc2cf0df2dfe3010b2b91a115a99c4747f8a7fcdbc",
+      "file": "3560ced121400e8596c45f3713a717d454692579ca1ab12b3d92db49213d9063"
+    },
+    "team-of-teams.md": {
+      "source": "a241e2673a367a2e4dd689f50ba356b535534824b34730bbaebdb1b2c12f9f2d",
+      "file": "cabca7664124db206434498eda4a09ee9c905644e5392ebb0de827e487590eea"
     },
     "testing.md": {
-      "source": "b9e250eb0195ce8c8ca1c3061d178ce3e5aaedb750b4ff45799c7b6d667bd1f9",
-      "file": "5cb0c672d7bafe0ad7c6222a542cdca5984c4d237cc1a00e0e83d20f58ca8f18"
+      "source": "d7c9cc483a42ad4711b15ff2ed6af1d592f2ba6a7615d885a80c4579fadaf8fd",
+      "file": "42e44067130096ffbf4532bc8706c3d72c1a7e70d922f644c79d28ae59c9edb9"
     },
     "tooling-and-deps.md": {
-      "source": "6c015d749cdda22d9e1ce423aad0663554a66579fd32bd79dac299438251b5d7",
-      "file": "7dd34566033577f425ffd3f74d398ae86714b9712824bf17eda4ab1e0ece8a91"
+      "source": "7c2964c7bb58973b9e8b33cdce166807025527a5e8567448aa3cc52e7507baca",
+      "file": "e2a6ecaa894704967b542aa677fb31d139c53f815cdacd0184925ff6d30d62b6"
+    },
+    "wasm-self-contained-pages.md": {
+      "source": "ff3bdfe410f2975f9dbe1db16da1adca7cd02499327534949c92cf45f1e803f3",
+      "file": "7cdf32c59b2e4a96300fe78d11bbc09376579a90fac184680174c04394e2d966"
     }
   }
 }

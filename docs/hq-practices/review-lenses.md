@@ -73,7 +73,7 @@ Never make a gate pass by weakening it. Without a human-recorded reason, a chang
 - remove assertions or test cases;
 - raise a timeout or retry count to hide slowness or flakiness;
 - use `--no-verify`, `continue-on-error`, `|| true` in a gate;
-- add a lint or type suppression (`noqa`, `type: ignore`, `eslint-disable`, `#[allow]`) without a reason on the line, or
+- add a lint or type suppression (`noqa`, `type: ignore`, `eslint-disable`, `#[allow]`) without a reason on the line (a dash, `because` or `reason:` before it; the check reads only these), or
   loosen a lint level ([guards.md](guards.md)).
 
 A child agent's "tests pass" is a claim: the parent re-runs the gate itself, and reports "done, unverified" when it
@@ -89,7 +89,8 @@ Between a planning step and its workers, the hand-over is a file, not a long pro
 linked from it) that says goal, files, constraints, "done when" and the gate. The brief then references it ("do
 `B-261031-x`; read it first") and stays short. The file survives a context compaction, a restart and a second worker;
 a prompt does not. The item is the contract: the worker updates its Progress section, the supervisor reads that and the
-diff, never the worker's chat. See [backlog/README.md](https://github.com/evocaslab/hq/blob/main/docs/backlog/README.md) for the format.
+diff, never the worker's chat. The review lens "diff against Done when" compares the diff with the item's Done when
+([spec-driven-work.md](spec-driven-work.md)). See [backlog/README.md](https://github.com/evocaslab/hq/blob/main/docs/backlog/README.md) for the format.
 
 ## Sources
 

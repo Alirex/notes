@@ -3,7 +3,7 @@ summary: "Strictest linters and type checkers; fix findings, never silence them"
 group: quality
 tags: [lint, types]
 applies-to: [all]
-reviewed: 2026-10-27
+reviewed: 2026-11-06
 status: stable
 ---
 
@@ -24,7 +24,8 @@ When a check fails, take the first option that works:
 3. **Restructure**: too many arguments → an options object; too complex → smaller functions; a broad `except` → the
    specific exceptions.
 4. **Suppress one line**, scoped to the rule, with a reason on the same line or just above:
-   `# noqa: S603  # fixed argv, no shell`. Never a bare `# noqa`, `# type: ignore` or `@ts-ignore`.
+   `# noqa: S603 - fixed argv, no shell` (a dash, `because` or `reason:` before the reason: that is the form the
+   gate-integrity check reads; a second `#` is not accepted). Never a bare `# noqa`, `# type: ignore` or `@ts-ignore`.
 5. **Turn the rule off** in the config, only when it is wrong for the whole project (it conflicts with the formatter,
    or the style it asks for is not wanted). One comment line per rule with the reason.
 
@@ -91,6 +92,11 @@ The same rule for every other way to make a failure quiet:
   `--throw-deprecation`); ignore a third-party one by its exact message and module, with a reason.
 - **Hooks and CI**: no `--no-verify`, no `SKIP=` for a failing hook, no `continue-on-error` or `|| true` on a check.
   A hook that is not a check (a version bumper) may be skipped in CI by name, with a comment.
+- **A hook that cannot read a generated file is configured, not dropped.** `check-yaml` fails on `pnpm-lock.yaml`
+  (current pnpm writes several YAML documents into it). Prefer `args: [--allow-multiple-documents]` on that hook: every
+  YAML file is still parsed, and the lockfile too. If a file must be skipped entirely, scope it to that one file on
+  that one hook (`exclude: ^client/pnpm-lock\.yaml$`) with a comment saying why. Never `--unsafe` (syntax only) or a
+  global exclude. Same for any lockfile a tool owns and no human edits.
 - **Coverage and thresholds**: never lower a threshold to pass; exclude a line with a reason
   (`# pragma: no cover  # unreachable: ...`).
 
@@ -100,6 +106,12 @@ The same rule for every other way to make a failure quiet:
 - **A ratchet for an existing repo.** Turn the strict mode on, record the current count of findings or suppressions
   per rule in a baseline file, and fail the gate when a count grows. Lower the baseline in every change that fixes
   some; never raise it.
+- **Write the reason in the form the guard reads.** A guard that scans for "suppression without a reason" accepts one
+  fixed shape (for example `# noqa: S603 - fixed argv, no shell`); a bare `# noqa: X # why` can fail it. Check the
+  form against the guard before the first commit, and put multi-line calls' `noqa` on the line the linter reports.
+- **A small check script is written for strict types from the start.** Under basedpyright `all`, `argparse`
+  namespaces and `json.loads` results are `Any`; read flags from `sys.argv`, or ask the tool for typed output
+  (for `just`, `just --list --group <g>`) instead of walking untyped JSON, and assign unused call results to `_`.
 - **Every exception is debt.** Per-file ignores and lowered rules go into `TECHNICAL_DEBT.md`; remove one per month
   ([tooling-and-deps.md](tooling-and-deps.md)).
 - **A tool upgrade that brings new rules**: fix the findings in the same change as the upgrade. Turn a rule off only
@@ -117,6 +129,9 @@ costs more.
 
 ## Sources
 
+- Observed in a managed repo (2026-11-06): `check-yaml` rejecting the multi-document `pnpm-lock.yaml`, fixed with a
+  path-scoped `exclude` there and with `--allow-multiple-documents` in another (teleporto); the same note is in [shared-libraries.md](shared-libraries.md). No pnpm documentation read for the
+  multi-document format.
 - ruff `ALL` and `# noqa: <code>`: <https://docs.astral.sh/ruff/linter/>; `extend-select`, `per-file-ignores`:
   <https://docs.astral.sh/ruff/settings/>; `RUF100` unused `noqa`: <https://docs.astral.sh/ruff/rules/unused-noqa/>
 - basedpyright `typeCheckingMode = "all"`, `failOnWarnings`, `reportUnnecessaryTypeIgnoreComment`,
@@ -135,6 +150,8 @@ costs more.
 - Clippy groups (`pedantic`, `nursery`, `cargo`, restriction lints enabled one by one):
   <https://doc.rust-lang.org/clippy/lints.html>; `allow-unwrap-in-tests`:
   <https://doc.rust-lang.org/clippy/lint_configuration.html>
+- pre-commit-hooks `check-yaml` arguments `--allow-multiple-documents`, `--unsafe` (read):
+  <https://github.com/pre-commit/pre-commit-hooks>
 - shellcheck `enable=all` in `.shellcheckrc`: <https://github.com/koalaman/shellcheck/wiki/optional>
 - Observed in HQ's own repos and another managed repo (the suppression guard, the ratchet, a technical-debt file); no external
   source read for `--strict-markers`/`--strict-config`, the shellcheck rc lookup, or the guard and ratchet rules.

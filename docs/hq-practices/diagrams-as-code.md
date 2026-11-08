@@ -3,7 +3,7 @@ summary: "Diagrams as text: which tool per diagram class, a gate that parses and
 group: docs
 tags: [docs, diagrams]
 applies-to: [all]
-reviewed: 2026-11-04
+reviewed: 2026-11-07
 status: stable
 ---
 
@@ -37,6 +37,8 @@ and in a few classes where another tool is better.
 | Flows | Mermaid `sequenceDiagram` | long or nested flows: PlantUML | the strongest Mermaid type |
 | State machines | Mermaid `stateDiagram-v2`, pinned by a test | | |
 | Data (ER) | Mermaid `erDiagram`, generated from the migrated schema | schema with more than about 25 tables: tbls or Graphviz, SVG committed | |
+| Data (ER), interactive | `hq-diagram` model generated from the migrated schema (`schema.diagram.yaml`: a box per table, `members:` rows, `from_card` / `to_card` at the line ends) | | same hover, click panel and fold as the information model; Mermaid stays the default on GitHub pages |
+| Class diagrams | Mermaid `classDiagram` | the same `members:` boxes in `hq-diagram` when the model is generated from code | no operations compartment, inheritance or visibility yet |
 | Deployment, infrastructure | Mermaid `flowchart`, or generated from the manifest | several environments from one model: Structurizr deployment views | |
 | Generated graphs (crates, packages, compose) | generate Mermaid, or Graphviz DOT when bigger than the limit | | `cargo depgraph`, `dot -Tsvg` |
 | Illustrations, posters, one-offs | hand-written SVG, or `.drawio.svg` / Excalidraw SVG with the embedded source | print quality: Typst with CeTZ | an image with alt text and long description; agents write these badly |
@@ -113,6 +115,69 @@ Lessons from a spec with a flow diagram, a record-anatomy diagram and a reader f
   overlapping edges and clipped labels. For a PDF, export from the checkout that holds the latest text and look at
   the pages; a PDF made from another checkout shows the old version.
 
+## A data model drawn by a small renderer
+
+The page, wasm and accessibility side of such a renderer: [wasm-self-contained-pages.md](wasm-self-contained-pages.md).
+
+Lessons from `hq-diagram` (Rust, YAML model to SVG, HTML and A3 PDF) on the report-bot information model
+(2026-11-06). Use it when the picture is data (who sends what, where it lands) and a general tool's auto-layout would
+reshuffle it on every change; run it with `just docs-diagram`.
+
+- **The model is the source, the picture a build product.** Divisions, nodes and edges live in YAML read through a
+  strict parser (unknown fields refused); a node must name its `sources:` or say `unknown: true`, and the validator
+  rejects anything else. The gap shows on the picture as a dotted unknown source instead of a guess.
+- **Pin the layout, do not search for one.** Fixed columns (sources, collectors, outputs), one bus per source (stub,
+  spine, branches) and one lane per flow keep the output the same for the same input; a golden SVG test shows every layout change in the diff.
+- **Measure text, do not estimate it.** A flat "7 px per character" overflowed boxes with capitals and Cyrillic. Per-glyph
+  advances (integer maths, bold wider) and wrapping by pixel width, plus a test that no line is wider than its box, fixed it.
+- **Colour is never the only cue.** Give each division its own marker shape (circle, square, diamond, triangles, plus,
+  cross, hexagon), the same one on the bus and in the key, and mark the unknown source dotted. Test it: distinct shapes,
+  and colours that collapse under simulated deuteranopia (Machado matrix) or greyscale may do so only if the shapes differ.
+  Use a colour-blind-safe palette (Okabe-Ito) as the base.
+- **Look at it at both sizes.** Render, then screenshot the phone width (375 px) and the print size. The phone view
+  needed a zoom toolbar and a fit-to-width button; the A3 PDF needed the whole picture on one page.
+- **Group, label and tag in the model, not on the canvas.** Containers (`groups:` and `group:` on a node), icons and
+  per-document parts with a format (Word, Excel, PDF, text, text and pictures) are model fields; the renderer keeps
+  the members of a group together and draws the frame, so reordering the file never leaves a frame around strangers.
+- **Hover to trace, click to read.** In the interactive page, dim everything not connected to the hovered or focused
+  box, show a short tooltip, and put the long text, examples and pictures in the click panel (keyboard and deep link
+  too). Every box and container needs a keyboard path and a native `<title>` for viewers without script.
+- **Fold, filter, pin.** A big model needs controls in the interactive page: fold a container, filter by source and
+  name, pin a box to light its whole chain; keep motion optional (`prefers-reduced-motion`). Attachments are model
+  fields (`file` embedded, `url` linked, a size limit) under the same export flag.
+- **Let the page edit, keep the source.** An edit mode in the page cannot write files, so it downloads a sidecar
+  (`<model>.edits.json`) that the renderer applies on top of the YAML: comments and review diffs of the model stay
+  clean, and an edit naming a removed id fails loudly. Tag parts (`tags:`) so one flag (`--hide bot`) leaves a whole
+  audience out of the picture.
+- **A local server closes the loop.** For editing in the page, a loopback-only server that re-renders on every load and
+  writes the YAML and the sidecar beats download-and-copy: put a random token on every request, check the `Host`
+  header (DNS rebinding), write only the two files, atomically, and refuse YAML that does not load and validate, so the
+  file on disk always renders. Show the error plus the text to fix when the files were broken from outside. For visual
+  structure edits (add, delete, connect, move) turn each click into a small line patch of the YAML text, not a re-dump of
+  the parsed model: comments and order survive, the diff is one line, and the same check refuses a patch that breaks it.
+- **Make "what leaves the building" a flag.** Examples and attachments in an exported page can be sensitive: give each
+  document and part an `export:` flag and the CLI a `--documents all|marked|none` switch, and test that withheld text
+  and pictures are absent from the output, not just hidden.
+- **A gate hook can eat fixtures.** A formatter or SVG minifier that rewrites `tests/fixtures/` breaks a byte-exact
+  golden test: exclude fixture folders from such hooks.
+- **Cut crossings by counting them.** Pinned columns still cross lines. Write a function that counts crossings on the
+  finished layout, then order boxes and lanes with a few barycentre sweeps (containers move as one block). Lay out each
+  candidate in full and keep the file order unless a candidate crosses strictly less, so a model without crossings keeps
+  its order and ties never reshuffle it. Integers only, no randomness: the result is the same in the wasm build and in
+  the golden test. Test a ceiling ("at most N on this fixture") with the old count written in the test. Search moves that
+  gave no gain and cost time (insertion moves, every corridor mode per move) were not worth keeping.
+- **A page that translates itself changes text widths.** If the page swaps labels to another language in the browser,
+  a chip or pill sized on the first language overflows. Size drawn shapes for the wider of the two texts, and check the
+  other language with a screenshot.
+- **One relayout engine for the page and the CLI.** Embed the same layout code as wasm so folding and dragging redraw
+  without a server; rebuild the wasm asset once after a batch of layout changes (a stale asset silently draws the old
+  layout), and make a test that the page starts in the orientation and warnings it was rendered with.
+- **Keyboard and contrast are features of the canvas.** Make boxes and lines focusable, give every mouse edit a key
+  (edit, nudge, delete with confirm), keep a live region for announcements, and offer a high-contrast theme.
+- **Parallel agents on one crate:** give each its own worktree and file area, have them commit without pushing, and
+  cherry-pick them one by one; conflicts concentrate in the shared page file and the string table, so put each feature
+  in a marked block (`/* a11y begin */ ... end */`) and regenerate the golden file and the wasm only once at the end.
+
 ## Sources
 
 - Mermaid: [releases](https://github.com/mermaid-js/mermaid/releases) (12.0.0 breaking: ELK bundled and default, new
@@ -144,3 +209,9 @@ Lessons from a spec with a flow diagram, a record-anatomy diagram and a reader f
   this page's judgement.
 - Observed in `auto-joint-lab/report-bot`, 2026-11-04: three Mermaid diagrams with notes in the strike spec, rendered with
   `mermaid_check.py render`, checked as images and exported with `just docs-pdf`.
+- Observed in `crates/hq-diagram` and `auto-joint-lab/report-bot`'s information model, 2026-11-06 and 2026-11-07
+  (crossings 170 to 75 on the fixture, parallel agent round).
+- Ordering: Sugiyama, Tagawa and Toda, [Methods for visual understanding of hierarchical system structures](https://doi.org/10.1109/TSMC.1981.4308636) (1981), the barycentre method for crossing reduction.
+- Colour vision: Machado, Oliveira and Fernandes, [A physiologically-based model for simulation of color vision deficiency](https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html) (2009);
+  Okabe and Ito, [Color Universal Design](https://jfly.uni-koeln.de/color/); WCAG 2.2
+  [1.4.1 Use of Color](https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html).
