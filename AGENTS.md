@@ -23,6 +23,10 @@ General practices live in HQ: [evocaslab/hq `practices/`](https://github.com/evo
 - Markdown is formatted by prettier and checked by markdownlint with the default rules; `.markdownlint.yaml` turns a
   rule off only with a reason on its line. Fix the finding, don't silence it:
   [HQ lint-strictness](https://github.com/evocaslab/hq/blob/main/practices/lint-strictness.md).
+- Change repo files with the Edit and Write tools, never `cat >`, `sed -i` or a heredoc through Bash: the command guard
+  denies them and every denial costs a turn. For a change in many files, Write a script and run it. Reasons:
+  [practices/agent-instructions.md](https://github.com/evocaslab/hq/blob/main/practices/agent-instructions.md).
+- Conformance: edit-rule-present
 - A new note gets a row in the README index (`notes/<slug>/<lang>.md`, `ukr` or `eng`).
 - Commits are Conventional Commits (`docs:` for notes, `chore:` for tooling), lowercase subject.
 - `docs/hq-practices/` is a generated copy of the HQ practices that apply here (`just practices-sync notes` in HQ). Never
