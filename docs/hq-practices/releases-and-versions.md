@@ -1,9 +1,9 @@
 ---
-summary: "Release recipe, SemVer or deploy tags, version stamp, update notice, rollback"
+summary: "Version scheme by consumer, version+sha at runtime, local release script, update notice, rollback"
 group: deploy
-tags: [release, versions]
+tags: [release]
 applies-to: [all]
-reviewed: 2026-10-25
+reviewed: 2026-11-16
 status: stable
 ---
 
@@ -18,12 +18,75 @@ How code gets from `main` to the running bot or a published package, and how to 
 
 ## Two kinds of repo
 
-- **Deployed service** (a web service): a release is "this commit runs in production". No version number to bump; the
-  identity is the commit, shown by the status route. Tag each deployed commit `deploy-YYYYMMDD-HHMM`: cheap, gives
+- **Deployed service** (a web service): a release is "this commit runs in production". No version bump per deploy; the
+  identity is the commit, shown by the status route next to the manifest's SemVer ([a service gets a version too](#the-release-step)). Tag each deployed commit `deploy-YYYYMMDD-HHMM`: cheap, gives
   rollback targets and "what changed since".
 - **Published package or CLI** (a CLI, templates): a release is a SemVer tag `vX.Y.Z` plus a published
   artifact. The version lives in one place (`pyproject.toml` / `Cargo.toml`) and the tag must equal it; a gate
   step fails when they differ.
+
+## The scheme follows the consumer
+
+Who reads the version decides what it is. Private does not remove the need: it moves it. The version is for people and
+for bug reports and results; the commit is the identity. Every kind below keeps **one version source of truth**
+(workspace `Cargo.toml`, `pyproject.toml`, `package.json`; never a second copy), **a tag per release**, **a changelog**,
+and **the version plus git sha (and a dirty flag) visible in the running thing**.
+
+| Kind | Version | Identity shown | Release |
+| --- | --- | --- | --- |
+| Library other repos use | SemVer; breaking = major (minor in 0.x) | version + tag | tag + changelog entry |
+| CLI / desktop tool | SemVer, one workspace version | `--version` prints `X.Y.Z (sha[-dirty])`; About shows the same | tag + `SHA256SUMS`; a local script when there is no CI |
+| Deployed service | none to bump; `deploy-*` tag | commit on the status route | as above |
+| Research model / paper code | SemVer; a minor bump when model numbers change, listed in the changelog with the golden checksums | version + sha + dirty flag in every output folder; `CITATION.cff` at the root | tag per paper submission |
+
+- **Stamp the build, do not type it.** Compile `git describe --always --dirty` into the binary (a small `build.rs`
+  printing `cargo:rustc-env=…`, or the `vergen` / `git-version` crates; Python: `importlib.metadata` plus a build-time
+  sha). Fall back to `unknown` when there is no `.git` (archive builds). A hand-written stamp goes stale.
+- **Results carry their origin.** A run writes `version`, `git describe`, dirty flag, seed and config hash into its
+  output folder (a manifest file), so a number in a paper traces to a commit. A dirty tree is recorded, not refused.
+- **`CITATION.cff`** (Citation File Format) at the root of research code; GitHub shows "Cite this repository". Where no
+  DOI exists, cite repo URL plus the commit or tag.
+- **Private repo without CI: a local release script** (`scripts/release.sh`, `just dist-release`). It refuses a dirty
+  tree, a version without a `CHANGELOG.md` entry and an existing tag; builds the archives, writes `SHA256SUMS`, makes an
+  annotated tag `vX.Y.Z`; `--push` pushes the tag and, if `gh` is logged in, creates the Release. Nothing leaves the
+  machine without `--push`. No new CI workflow for a private repo; a workflow stays manual-only. Reference:
+  `auto-joint-lab/combat_models` (`scripts/release.sh`, `CHANGELOG.md`).
+- **Tooling choice.** `release-plz` is CI-first; `cargo-release` is the CLI tool when per-crate bumps and `Cargo.lock`
+  handling start to hurt; `cargo-dist` ignores `publish = false` crates unless `dist = true`. For a private workspace
+  of a few crates the local script is the least machinery.
+- **Not applicable:** docs-only or notes repos and config repos with no artifact keep no version; say so in the repo's
+  AGENTS.md instead of adding one.
+
+## The release step
+
+A release is one planned step after a green landing (stage 6a of [agent-workflow.md](agent-workflow.md#stages)), not a
+by-product of landing:
+
+1. **Pick the level** by SemVer (see Rules) from the changelog entries since the last tag.
+2. **Bump the one source** and every mirror in the same commit: workspace `Cargo.toml` (members inherit with
+   `version.workspace = true`), `package.json`, `CITATION.cff`; refresh the lock file. Never leave two literal copies
+   that differ.
+3. **Changelog**: a dated entry for the version (`CHANGELOG.md`, or the per-branch files in `docs/changelog/` rolled up).
+4. **Check the stamp**: build, run `--version` and open About; they print `X.Y.Z (sha)` and the clean tree has no
+   `-dirty`. The sha is the release commit.
+5. **Tag** the release commit `vX.Y.Z` (annotated; a service gets `deploy-YYYYMMDD-HHMM` as well), push the tag. Then
+   publish only if the repo's rules allow (see "Publishing" below).
+
+Where the repo has a recipe (`just release-check` / `just release <version>`, or `scripts/release.sh`), it does 2 to 5
+and refuses a dirty tree, a missing changelog entry and an existing tag; without one, the steps above are the checklist.
+
+**Checked by machine.** `just repos-conformance` runs `version-one-source` over every clone: the literal versions in
+`Cargo.toml` (workspace or package), `pyproject.toml`, `package.json` and `CITATION.cff` are equal (`0.0.0` placeholders
+and inherited versions do not count), a `CHANGELOG.md` or `docs/changelog/*.md` exists, and a repo that builds a binary
+or a web app stamps the commit (`build.rs`, `vite.config`, `Dockerfile`, `justfile` mention `git describe`, `rev-parse`,
+`vergen` or a `*_COMMIT` variable). It cannot run the binary: step 4 stays a human or test step. A repo with no
+artifact says `Versioning: none` in its AGENTS.md and the check is `n.a.`. A monorepo that deliberately versions parts
+separately (apps, packages) lists that in its AGENTS.md and is reported by the check until it chooses one source: pick
+a workspace version for everything that ships together, or split the repo.
+
+**A service gets a version too.** The "Deployed service" row's identity is still the commit, but the manifest carries a
+SemVer for people and bug reports, and the status route and About show `version + sha`; only the *bump per deploy* is
+dropped.
 
 ## Web page versions and the update notice
 
@@ -88,11 +151,14 @@ When agents auto-land on `main` and a land redeploys the live service (for examp
 - **Cut releases from a green `main`**, by a recipe (`just release-check`, then `just release <version>`), not
   hand-typed commands. The recipe refuses a dirty tree, a branch other than `main`, a failing gate, or a tag that
   already exists.
+- **Generated output carries its version too**: the tool `VERSION` and a hash of the inputs go in the header of every
+  generated file ([architecture-diagrams.md](architecture-diagrams.md#generated-views)); bump the tool's `VERSION` when
+  its behaviour changes.
 - **SemVer for packages**: breaking change = major (minor while `0.x`), feature = minor, fix = patch. A CLI flag,
   an exit code, an output format scripts parse and a config key are public surface.
 - **Release notes come from the changelog files** landed since the last tag, not from `git log`. A branch without
   a changelog entry is a gate finding, not a gap to fill at release time.
-- **Publishing is the maintainer's step** until the repo has trusted publishing: the release skill stops at "tag
+- **Publishing** ("Publishing" in the release step): the maintainer's step until the repo has trusted publishing: the release skill stops at "tag
   and notes ready" and files a `manual-action` issue ([maintainer-questions.md](maintainer-questions.md)).
 - **Deploy order for a service**: build images from the tag, take the pre-migration backup, run the init
   (migrate) step, start, wait for readiness, run the smoke checks, tag. Anything red before "start" aborts with the
@@ -115,4 +181,8 @@ Toolchain pins (language, uv, node, base images) are released like code: own bra
 - Keep a Changelog (entries grouped by type): <https://keepachangelog.com/>
 - RFC 9111 HTTP Caching (heuristic freshness, `no-cache`): <https://www.rfc-editor.org/rfc/rfc9111#section-4.2.2>
 - MDN, Cache-Control (`no-cache`, `immutable`): <https://developer.mozilla.org/docs/Web/HTTP/Headers/Cache-Control>
+- SemVer or CalVer by consumer: <https://dev.to/christian98/choosing-the-right-versioning-scheme-its-about-who-consumes-your-software-1i3>, <https://frontside.com/blog/2022-02-09-semver-or-calver-by-project-type/>
+- Citing versions and commits, `CITATION.cff`: <https://www.software.ac.uk/blog/standard-format-citation-files>, <https://citation-file-format.github.io/>
+- Rust release tools: <https://release-plz.pages.dev/docs/why>, <https://github.com/crate-ci/cargo-release>, <https://github.com/axodotdev/cargo-dist>
+- Build stamps: <https://docs.rs/vergen/latest>, <https://crates.io/crates/git-version>
 - Vite, `define` (compile-time constants): <https://vite.dev/config/shared-options#define>

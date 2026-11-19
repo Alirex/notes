@@ -34,6 +34,13 @@ Name the lenses in the review brief ("apply: attack the premise, idempotency, ga
 with `file:line` and a verdict per lens, "no finding" included. A finding is a claim: the supervisor checks it against
 the code before acting ([subagents-and-context.md](subagents-and-context.md#writing-a-subagent-prompt)).
 
+The smells a linter cannot count (shotgun surgery, feature envy, speculative generality and so on) are a short checklist
+in [refactoring-and-smells.md](refactoring-and-smells.md#lens-checklist-smells-a-linter-cannot-count). A commit labelled
+"refactor:" is first checked against the
+[behaviour-preserving diff rules](refactoring-and-smells.md#behaviour-preserving-diff-rules-for-agents): tests and golden
+files untouched, one technique, no new abstraction with one user; a diff that fails them is a behaviour change to
+review as one, whatever its label.
+
 A structure finding is filed as a backlog item or a comment, not applied as an unasked refactor
 ([change-discipline.md](change-discipline.md#keep-the-change-small)). Report a few high-conviction findings, structural
 ones first, and drop nits when a structural problem exists; a rename does not fix a structural problem.
@@ -65,6 +72,28 @@ averaging. Several candidates multiply plan spend, so use it only for one-way do
 session-start tool that caps the model at the caller's own runs the "frontier review" on the caller's model
 ([subagents-and-context.md](subagents-and-context.md#pick-the-cheapest-tier-that-works)).
 
+## Review by a stronger model
+
+Optional, opt-in (`review: stronger` on the item or a line in the brief), for UI/UX, security, large or risky diffs, or
+on the maintainer's request; the step is in [agent-workflow.md](agent-workflow.md#optional-review-by-a-stronger-model).
+Check `just cc-usage` first and never run it on "SLOW DOWN". Worked once in the combat_models session: an Opus UI/UX
+review, Sonnet builders fixed the findings.
+
+The reviewer is a read-only Opus or Fable subagent (Agent tool, `model`), told the lenses to use and to say what it
+skipped. Report template (under 60 lines):
+
+```text
+Verdict: ship / fix first / rework
+Blocker:     path:line - what, why, evidence level
+Should fix:  path:line - ...
+Nit:         path:line - ...
+Not checked: what was skipped and why
+Lessons:     project-neutral practice lessons, or none
+```
+
+The supervisor spot-checks two references, files the findings as one backlog item, the implementing cheaper model fixes
+them, and the supervisor re-runs the gate before landing.
+
 ## Gate integrity
 
 Never make a gate pass by weakening it. Without a human-recorded reason, a change must not:
@@ -73,23 +102,24 @@ Never make a gate pass by weakening it. Without a human-recorded reason, a chang
 - remove assertions or test cases;
 - raise a timeout or retry count to hide slowness or flakiness;
 - use `--no-verify`, `continue-on-error`, `|| true` in a gate;
-- add a lint or type suppression (`noqa`, `type: ignore`, `eslint-disable`, `#[allow]`) without a reason on the line, or
+- add a lint or type suppression (`noqa`, `type: ignore`, `eslint-disable`, `#[allow]`) without a reason on the line (a dash, `because` or `reason:` before it; the check reads only these), or
   loosen a lint level ([guards.md](guards.md)).
 
-A child agent's "tests pass" is a claim: the parent re-runs the gate itself, and reports "done, unverified" when it
+A subagent's "tests pass" is a claim: the supervisor re-runs the gate itself, and reports "done, unverified" when it
 could not. The machine check is HQ's `just q-integrity` (`scripts/quality/check_gate_integrity.py`): it reads the
 branch diff against the merge base and fails on the patterns above unless a commit in the branch carries a
 `Gate-change: <reason>` line. It is a heuristic over added and removed lines: a false hit is answered with the reason
 line, a miss is caught by the reviewer. Run it on a worker's branch before landing. Related: the
 [command guard](agent-security.md#command-guard) blocks `--no-verify` at the shell.
 
-## Backlog item as handoff
+## Backlog item as brief
 
-Between a planning step and its workers, the hand-over is a file, not a long prompt: a backlog item (or a design doc
+Between a planning step and its workers, the brief is a file, not a long prompt: a backlog item (or a design doc
 linked from it) that says goal, files, constraints, "done when" and the gate. The brief then references it ("do
 `B-261031-x`; read it first") and stays short. The file survives a context compaction, a restart and a second worker;
 a prompt does not. The item is the contract: the worker updates its Progress section, the supervisor reads that and the
-diff, never the worker's chat. See [backlog/README.md](https://github.com/evocaslab/hq/blob/main/docs/backlog/README.md) for the format.
+diff, never the worker's chat. The review lens "diff against Done when" compares the diff with the item's Done when
+([spec-driven-work.md](spec-driven-work.md)). See [backlog/README.md](https://github.com/evocaslab/hq/blob/main/docs/backlog/README.md) for the format.
 
 ## Sources
 

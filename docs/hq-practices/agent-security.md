@@ -3,7 +3,7 @@ summary: "Coding agents: prompt injection, secrets out of reach, sandbox, MCP tr
 group: security
 tags: [agents, security]
 applies-to: [all]
-reviewed: 2026-11-01
+reviewed: 2026-11-09
 status: stable
 ---
 
@@ -13,7 +13,7 @@ Claude Code and other coding agents run shell commands as the user, read untrust
 dependency READMEs, tool output) and often work unattended. This page is what keeps that from leaking secrets or
 doing damage. Instructions and delegation are in [agent-instructions.md](agent-instructions.md),
 [subagents-and-context.md](subagents-and-context.md) and [autonomous-sessions.md](autonomous-sessions.md); repository
-side in [supply-chain-security.md](supply-chain-security.md). Claude Code details checked against the docs 2026-11.
+side in [supply-chain-security.md](supply-chain-security.md); the scanners that check it in [security-tooling.md](security-tooling.md). Claude Code details checked against the docs 2026-11.
 
 ## Rules
 
@@ -74,6 +74,23 @@ side in [supply-chain-security.md](supply-chain-security.md). Claude Code detail
   allow across every settings scope. A `-p` session shows neither the workspace trust dialog nor the `.mcp.json`
   approval prompt, so run it only in folders you trust.
 - Audit with `/permissions`; share the project's permission rules through git; keep personal ones in user settings.
+- **HQ's own settings** (applied 2026-11-09, `.claude/settings.json`): `permissions.deny` for `Read(./.env)`,
+  `Read(**/.env)`, `Read(./.env.local)`, `Read(./.env.production)`, `Read(./secrets/**)`, `Read(~/.ssh/**)`,
+  `Read(~/.aws/**)`, `Read(~/.gnupg/**)` and `Read(~/.config/gh/**)`. `.env.example` stays readable (compose files
+  forward its keys). A `~/` pattern is the home directory, `//path` an absolute one, and a single leading `/` anchors
+  at the settings file's project, so write home paths with `~/`. The rules bind the file tools and the file commands
+  Claude Code recognises, not a script that opens the file; the command guard and the secret scan still apply.
+  `just repos-conformance` checks that a managed repo's `.claude/settings.json` denies `Read(./.env)` (check
+  `claude-deny-env`).
+- **No `sandbox` block in HQ yet** (decision 2026-11-09, reopen when the blockers below are gone). Per the docs, the
+  sandbox is incompatible with Docker (an `excludedCommands` entry such as `docker compose *` is the workaround), a
+  Linux `localhost` inside it is private to the command (HQ's dev services, tailnet and the local LLM are reached on
+  localhost), writes stop at the working directory (HQ sessions write the other repos' clones, `~/.local/state/hq`,
+  `~/.config/systemd/user` and the shared heavy lock), and the network starts with an empty allowlist (`gh`, `git`,
+  package registries, Tailscale). Command hooks, the Read/Edit tools and local MCP servers run outside it anyway, so the
+  guard hook keeps its job. Without a long exclusion list the sandbox would either break the `just` flow or be
+  switched off; the compensating controls are the guard, the deny rules above and rule 7 (privileged config is
+  reviewed by the maintainer). A repo with no Docker and no cross-repo writes can enable it today.
 
 ## Command guard
 
@@ -84,7 +101,7 @@ mistakes, not a security boundary: it matches strings, so a command assembled at
 | Tier | Commands | Answer |
 | --- | --- | --- |
 | Deny | `rm -r` on `/`, `~`, `$HOME` (also inside a chain); force-push, `+main` or deleting `main`/`master`; wait loops (`until`/`while`/`for` ... `sleep`) and any `sleep` of 30 s or more | blocked, with the reason (background the command instead) |
-| Ask | any other `rm -r`; `git push --mirror`; `git stash drop/clear`; `git branch -D`; `find -delete`; a download piped into a shell; `dd of=/dev/`, `mkfs`; `git push --force`; `git reset --hard`; `git checkout .`, `git restore .`; `git clean -f`; `--no-verify` on commit/push/merge/rebase; `DROP`/`TRUNCATE`; `docker system prune`, `docker rm -f`; `kubectl delete`; `pkill`/`killall` | the user decides |
+| Ask | any other `rm -r`; `git push --mirror`; `git stash drop/clear`; `git branch -D`; `find -delete`; a download piped into a shell; `dd of=/dev/`, `mkfs`; `git push --force`; `git reset --hard`; `git checkout .`, `git restore .`; `git clean -f`; `--no-verify` on commit/push/merge/rebase; `DROP`/`TRUNCATE`; `docker system prune`, `docker rm -f`; `kubectl delete`; `pkill`/`killall`; credential reads: `/proc/*/environ`, a bare `env`/`printenv`/`set`/`export -p` dump, `printenv` of a secret-looking name, `gh auth token`, `gh secret`, `ssh`/`scp`/`rsync` to a host outside `registry/shared/machines.yaml` | the user decides (denied when unattended) |
 | Pass | `rm -r` on build output only, judged per command of a compound line (`target`, `node_modules`, `dist`, caches); `--force-with-lease` | silent |
 
 - The decision is nested under `hookSpecificOutput.permissionDecision` (`allow`, `deny`, `ask`); a top-level
@@ -103,6 +120,39 @@ mistakes, not a security boundary: it matches strings, so a command assembled at
   already do that.
 - HQ's example: `scripts/claude/guard/guard.sh` with `test_guard.py` (68 cases, the `guard-tests` hook); wired in
   `.claude/settings.json`. For other repos copy the script and the settings entry; change the Deny list only to add.
+
+## HALT switch
+
+A stop that does not depend on the agent's goodwill: advice like "SLOW DOWN" can be ignored, a file cannot. One sentinel
+file (`~/.local/state/hq/HALT`, JSON with reason, time, who) set by the maintainer; while it exists the guard denies
+`git push`, `repos-ship`, `repos-land*`, `start_session` and queue starts, naming the reason and the way out
+(`just cc-halt on|off|status`).
+
+- Existence is the signal: a malformed, empty or unreadable file still counts as tripped (fail closed); the reason is read
+  best effort.
+- It stops outward actions and new work only: commits, reads and the switch itself stay allowed, so no work is lost.
+- The check lives in the hook, outside the model: an agent cannot reason its way past it, only delete the file, which
+  the permission rules and the maintainer's review of transcripts cover. Test it with an env override of the path, never
+  with the real file (it would stop every session).
+- Idea from the HKUDS Vibe-Trading kill switch (`agent/src/live/halt.py`).
+
+## Stop first on a security alert
+
+A security alert on an agent run (a honeytoken touch, a credential read the guard denies, an egress hit, an unexpected
+host) stops the run first and is investigated second. "No need to stop" is not an allowed triage: in the July 2026
+OpenAI-agents / Hugging Face incident two early alerts were triaged that way, while the run kept going (OpenAI's
+technical report: one shared credential, an SSRF to an internal mirror as the only exit).
+
+- Stopping is the [HALT switch](#halt-switch); resuming is the maintainer's `just cc-halt off` after the cause is known.
+- **Honeytokens**: `just cc-honeytoken plant` writes decoy credential files (fake values) under
+  `~/.local/state/hq/honeytokens/`. No honest task names them, so the guard denies any Bash command that does, sets HALT
+  and sends the phone push. `just cc-honeytoken drill` measures touch to HALT (0.05 s on the first run: the guard is
+  synchronous). Only a file operand trips it (`…/honeytokens/<name>`): prose, a grep pattern or a bare directory
+  (`ls`, `grep -r` on the folder) does not, because a false trip stops the whole fleet. A probe (`cc-guard-chain`, the
+  permission hook) judges the touch but never writes the real HALT file. The guard sees Bash only; a touch through the
+  Read tool is not caught (a gap, so keep the decoys out of every allowed read path).
+- An alert that was a false alarm is cleared and noted; one that was real gets an incident page
+  (`docs/incidents/`).
 
 ## Never-list for autonomous sessions
 
@@ -124,6 +174,8 @@ the personal login (rule 5).
 
 ## MCP servers, plugins, skills
 
+Runbook for unattended and CI runs (flags, caps, Actions): [headless-and-ci-agents.md](headless-and-ci-agents.md).
+
 - Use servers you wrote or that a provider you already trust runs; Anthropic reviews directory connectors against
   listing criteria but does not security-audit them.
 - A project `.mcp.json`, a plugin or a skill can add tools, hooks or commands: read them before trusting a repo,
@@ -138,6 +190,10 @@ the personal login (rule 5).
   rules), and treat every MCP result as untrusted text (rule 1). A server you write never accepts a token issued
   for another service or forwards a client's token downstream (the MCP spec forbids this "token passthrough"),
   and asks for minimal scopes first, stepping up only when a privileged operation needs it.
+- A skill whose instructions make the agent call a remote endpoint first (a "usage beacon", `npx tool events ...`
+  before the real work) is a finding: it sends data on every use and runs unpinned code. Decline it or strip the call
+  before use; the full intake list is in
+  [supply-chain-security.md](supply-chain-security.md#adopting-a-third-party-tool-or-skill).
 - Adding a dependency is the same decision: check the exact name (typosquats, names an LLM invented), age and
   maintainers; the cooldown applies ([supply-chain-security.md](supply-chain-security.md#cooldown-minimum-release-age)).
 
@@ -204,6 +260,10 @@ Handling, LLM06 Excessive Agency, LLM02 Sensitive Information Disclosure and LLM
 - gstack `careful` skill (two-tier destructive-command hook, safe list): <https://github.com/garrytan/gstack/blob/main/careful/SKILL.md>
 - Git hooks export `GIT_DIR`, `GIT_WORK_TREE` and the `rev-parse --local-env-vars` idiom: <https://git-scm.com/docs/githooks>;
   the variables: <https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables>
+- HALT sentinel (existence-based kill switch, malformed file still tripped): <https://github.com/HKUDS/Vibe-Trading>
+  (`agent/src/live/halt.py`)
 - Observed in HQ (2026-10): tests run from a commit hook inherited `GIT_DIR` and corrupted a repo.
 
-See also [llm-usage-guards.md](llm-usage-guards.md) for cost and rate caps on model calls.
+See also [llm-usage-guards.md](llm-usage-guards.md) for cost and rate caps on model calls, and
+[agent-access-to-apps.md](agent-access-to-apps.md) for how an agent checks your own signed-in app (scoped token,
+browser, MCP) without holding your identity. To build or run an MCP server, see [mcp-server-design.md](mcp-server-design.md).

@@ -3,13 +3,15 @@ summary: "Lint/type/test gates, heavy-check locking, coverage on changed lines"
 group: quality
 tags: [gate, hooks]
 applies-to: [all]
-reviewed: 2026-11-04
+reviewed: 2026-11-08
 status: stable
+check: "hook: q-check"
 ---
 
 # Quality gate
 
-One command that decides "done": `just q-check` (or the repo's equivalent).
+One command that decides "done": `just q-check` (or the repo's equivalent). Where the gate sits among the other
+layers, from the type check to production monitoring: [verification-layers.md](verification-layers.md).
 
 ## Shape
 
@@ -115,12 +117,37 @@ Three lessons from a gate-notification change that failed in a hook while a seco
   config in an environment variable, and keep the old default for a manual run. Check it once by starting two runs at
   the same time. Same family as the throwaway-container ports in [testing.md](testing.md#throwaway-service-containers).
 
+## One gate per build dir
+
+A gate that builds into a shared cargo target dir (a dir only landing runs use, so sessions' own builds cannot touch it)
+still fails at random when two landings of one repo run at once: the second cleans the workspace members because its
+worktree differs (stale `env!("CARGO_MANIFEST_DIR")` paths), which deletes the binaries and fixtures' build output under
+the first gate (`renderer not found at …/debug/hq-diagram`, a fixture `NotFound`); the rerun passes with no code change.
+Waiting for room is not exclusion. The landing command holds a lock per build dir (a pid-stamped `mkdir` lock beside it,
+a dead holder's lock is taken over) for the clean and the whole gate, and a refusal says `environment, rerun`. A hook that
+needs a built binary builds it again once if it is missing and names the cause in that same words, never a bare failure.
+Test it with a held lock and a dead holder's lock.
+
 ## Pass record
 
 On a fully green run on a clean tree, record the tree hash in the shared git
 dir so every worktree sees it. Landing can skip the gate when the tree to land
 has a pass record, or differs from one only in docs (then run just the doc
 hooks).
+
+Key the record by the tree hash **and** the base commit (merge base with the default branch), and print where the
+pass came from (`PASS (cached <sha>)`). A fixer that rewrites files after the hooks passed makes the result describe a
+different tree: report `PASS (dirty)`, store nothing, and treat it as not landable until the edits are committed and the
+gate has run again. Workers stop at the first failing hook (cheap, often-failing ones first); the landing gate runs
+every hook (`--all`) so one run lists all failures. HQ: `scripts/quality/gate.sh`, `gate-bg.sh`, `just machine-metrics gates`.
+
+## Speed budget
+
+A gate nobody can run in a few minutes gets skipped. Write three numbers next to the gate's definition: the full gate
+in minutes, the quick loop (changed files only) in seconds, and the slowest single test in seconds. The gate's own
+timing history (HQ: `just machine-metrics gates`) is the measure; the monthly "Speed review" chore (`/optimize <repo>
+gate`) compares it with the budget, and an exceeded budget is fixed before new work that adds to it. Which tool to
+profile with, and how to judge a result (low load, at least two runs): [profiling.md](profiling.md).
 
 ## Coverage on changed lines
 
@@ -170,7 +197,28 @@ other pin (pre-commit hook, Dockerfile, build backend) disagrees. Details:
 
 See also [continuous-improvement.md](continuous-improvement.md): gates fail only on noise-free numbers; slowest-N and quarantine caps.
 
+## Reading gate and hook output
+
+- **Never pipe gate or commit output to `tail` alone.** The failing hook's block is in the middle; `| tail -5` showed
+  only the summary and cost three retries. Redirect to a file and grep it for `Failed`, `Passed`, `FAIL` or `EXIT=`,
+  or read the tool's own result line.
+- **A background-task notice belongs to the wrapper unless the command is synchronous.** Know which one you started:
+  a synchronous gate's notice means it ended (not that it passed); an asynchronous launcher's notice means only that
+  it launched. Either way read the result line before saying anything about the outcome.
+- **A turn that ends with a finished or failed background job unread is stale.** Wait for the job's one result line
+  (the `--wait` form, run in the background) in the same turn, or hand off with the job named; do not idle on it.
+- **Tests that run `git` scrub `GIT_*` from the environment.** Hooks export `GIT_DIR`; a test that re-initialised the
+  real repository set `core.bare=true` on it. Details: [testing.md](testing.md#protect-real-data).
+- **Regenerated files are committed with the edit that changes them.** A page edit without its regenerated index
+  (`practices.json`, the README table) fails the next gate's currency hook.
+- **markdownlint MD038 flags a pipe inside a code span in a long table row.** Keep pipes out of code spans in
+  tables (spell the command out in prose or use a list).
+
 ## Sources
+
+- Background-task, hook-output and `tail` lessons: observed in HQ (2026-11-08, R-2611081446-b811, research note
+  `background-tasks-research.md`); git hook environment: <https://git-scm.com/docs/githooks>; markdownlint MD038:
+  <https://github.com/DavidAnson/markdownlint/blob/main/doc/md038.md>.
 
 - basedpyright `typeCheckingMode` (`recommended`, `all`), `failOnWarnings`, per-path `strict`:
   <https://docs.basedpyright.com/latest/configuration/config-files/>
