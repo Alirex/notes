@@ -1,9 +1,9 @@
 ---
 summary: "Which language for a new tool or service: Rust by default, Python or shell only for throwaway work, the growth trigger that forces a port"
 group: quality
-tags: [rust, python, language, scripts]
+tags: [rust, python, just]
 applies-to: [all]
-reviewed: 2026-11-01
+reviewed: 2026-11-09
 status: draft
 ---
 
@@ -13,6 +13,24 @@ A tool is written in the language it will still be maintained in. Small scripts 
 began as a Python script and grew is rewritten later at the price of the whole history, while a tool started in Rust
 pays its cost once. The maintainer's decision (2026-11-01): **Rust is the default**; this page says where it is not and
 when a script must move.
+
+## Take, build or generate
+
+An agent makes writing code cheap, not owning it: every generated line is still read, tested, patched for security
+and kept current by the maintainer. Decide before the language does:
+
+| Part | Choice |
+| --- | --- |
+| Generic parts others solved and keep fixing: parsers of standard formats, HTTP, auth and crypto, database drivers, date and time, argument parsing, protocol clients | **Take** a maintained library (active releases, a clear owner, a licence that fits, a dependency that passes `q-audit` and `q-deny`); wrap it behind one thin module so it can be swapped. Where a service boundary decides it, see [service-boundaries.md](service-boundaries.md) |
+| The core: what makes this tool or product different, its rules, its data model, its decisions | **Build** it, designed and reviewed by the maintainer, tests first ([tdd.md](tdd.md)); this is the code the maintainer must understand |
+| Throwaway work (a probe, a one-time migration, a fixture generator) or code whose behaviour is fully pinned by tests (a mapping table, a serializer with round-trip tests) | Let the agent **generate** it, and delete it or keep it only with the tests that pin it |
+
+Never generate what a maintained library already does: the agent reproduces the common case and misses the edge cases
+and the fixes the library collected over years (the usual failures are in auth, crypto and parsing). Never take a
+library for the core: it ties the product to someone else's decisions. Record each taken or rejected choice of
+substance in the not-taken register ([research-flow.md](research-flow.md#the-notes-shape)): one line with the option, why not,
+the date, and what would reopen it (for example "a hand-rolled TOTP instead of the crate; 2026-11-09; reopen when the
+crate is unmaintained").
 
 ## Rule
 
@@ -68,5 +86,7 @@ A working script under the trigger, a one-off, or a frontend. Do not port for ta
 ## Sources
 
 - Maintainer decision, 2026-11-01 (Rust default, growth trigger, frontend exception).
+- Take, build or generate (2026-11-09): a judgment from a course-syllabus comparison and HQ's own supply-chain rules
+  ([supply-chain-security.md](supply-chain-security.md)); no external source states the three-way split.
 - [rust-service.md](https://github.com/evocaslab/hq/blob/main/practices/rust-service.md) (layout, errors, porting with parity tests), [python-style.md](https://github.com/evocaslab/hq/blob/main/practices/python-style.md).
 - The Rust Programming Language, "Fearless concurrency" and ownership chapters: <https://doc.rust-lang.org/book/>.

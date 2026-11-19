@@ -1,9 +1,9 @@
 ---
 summary: "Organizing just recipes and helper scripts"
 group: quality
-tags: [just, recipes]
+tags: [just]
 applies-to: [all]
-reviewed: 2026-10-25
+reviewed: 2026-11-08
 status: stable
 ---
 
@@ -23,6 +23,23 @@ status: stable
 - `just --show <recipe>` prints a recipe, `just --usage <recipe>` its parameters.
 - Keep a table of prefix → group → module → area in AGENTS.md; a new area gets
   a new module, prefix, group, import and row.
+
+### Comment contract, one `set` block, lint
+
+- **One comment line, at most 110 characters**: what the recipe does and the one flag that matters. The long text
+  (subcommands, every flag, examples) is the script's `--help`, which Typer writes anyway; a comment that lists
+  subcommands is a sign the help is not doing its job. Measured in HQ (2026-11-08): 70 of 156 comments were over 120
+  characters and `just --list` was 27 k characters; four recipes with a two-line comment showed only the second line.
+- **Set once in the root `justfile`**: `set positional-arguments` (recipes use `"$@"`; no `[positional-arguments]`
+  attribute per recipe) and `set quiet` (a result is the script's output, not the echoed command line). Check such a
+  change with `just --dump --dump-format json`: recipe bodies must be identical before and after.
+- **A recipe only the maintainer types** (a counterpart that undoes a setup, a mode switch) carries
+  `[metadata('manual')]`, so the dead-recipe check does not flag it.
+- **Lint the recipes** (HQ: `scripts/quality/just_recipes.py`, prek hook `just-recipes`): over the dump JSON, every
+  public recipe has a group and a one-line comment within the limit, its prefix is in the AGENTS.md table, every
+  `just x-y` quoted in the docs exists (names of other repos' prefixes are skipped; a planned recipe is written without
+  `just`), and a recipe with no reference outside the recipe files is reported as dead. A doc that must name a planned
+  or another repo's recipe drops the `just` word.
 
 Typical prefixes (a typical app repo's modules): `q-` quality, `web-` web frontend (not `w-`),
 `g-` desktop GUI run and builds, `db-` migrations, `dk-` docker, `git-` branch
@@ -117,7 +134,8 @@ A script outside any uv project (or one that must not need the project's venv) i
 
 A notes or docs repo (HQ itself) keeps the same layout with fewer modules: Python helpers are uv scripts
 (see below), the checkers (ruff, shellcheck, markdownlint, the justfile formatter) are prek hooks that bring
-their own tools, and `q-check` is just `prek run --all-files`. Repo-specific checks are `local` hooks.
+their own tools, and `q-check` runs every prek hook on all files (HQ's `scripts/quality/gate.sh` wraps `prek run --all-files` with the
+pass record and timing: [quality-gate.md](quality-gate.md#pass-record)). Repo-specific checks are `local` hooks.
 Example: HQ's `just/`, `scripts/` and `.pre-commit-config.yaml`.
 
 Which recipe names exist in every repo: [just-recipe-vocabulary.md](just-recipe-vocabulary.md).

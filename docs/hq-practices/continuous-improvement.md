@@ -1,9 +1,9 @@
 ---
 summary: "The improvement loop once (baseline, budget, guard, record), regression guards on noisy machines, traceability from backlog item to error, test-suite and agent-flow numbers"
 group: quality
-tags: [performance, traceability, tests, agents, process]
+tags: [performance, workflow, testing, agents]
 applies-to: [all]
-reviewed: 2026-11-01
+reviewed: 2026-11-13
 status: draft
 ---
 
@@ -44,7 +44,32 @@ fail loudly** to reviews that depend on someone remembering.
 | Product | p95 of the hot endpoints, slowest `pg_stat_statements` entry, bundle size, Lighthouse budgets | Weekly snapshot | With each release |
 | Tests | Slowest N printed every run; quarantine cap | Slowest N per run | Weekly |
 | Deploys | Lead time, deploy frequency, change fail rate | Deploy record | Weekly Retro |
-| Agent flow | Plan cost, retries and time to land per landed item | `cc-cost --by branch`, `docs-flow` | Weekly Retro |
+| Agent flow | Plan cost, retries and time to land per landed item | `cc-cost --by branch`, `cc-cost outcomes` (success rate, median and p90 cost per landed item by model and size), `docs-flow` | Weekly Retro |
+
+## Deciding what to improve
+
+The loop above says "pick the largest avoidable cost"; with hundreds of open items that needs a rule, or the top band
+fills up with everything that felt important. Two ideas, both old: **fix the constraint** (Theory of Constraints: the
+system's output is set by one limiting step, so work anywhere else changes little; identify it, exploit it, subordinate
+the rest, elevate it, then repeat because the constraint moves) and **rank by delay cost per size** (WSJF: cost of delay
+divided by job size, highest first; Reinertsen's form uses real cost and duration, SAFe a relative estimate and size as
+a proxy for duration; it ignores sunk cost).
+
+| Step | Rule |
+| --- | --- |
+| Signals | Use only what is already recorded: flow metrics, refusal and stop-reason counts, wait times, gate and test times, repeated incident causes, repeated permission prompts, repeated requests. A signal nobody records yet is a first item, not a guess |
+| Constraint | Name **one** largest constraint per review, as the signal with the most minutes lost per week. Items that do not remove it do not enter the top band |
+| Score | minutes lost per week to the cause the item removes x confidence (1.0 measured, 0.5 read in code, 0.25 hypothesis) / size in days (s 0.5, m 1, l 3, xl 8) |
+| Store | The score maps to `priority`: top 3 at 20-29, next 5 at 10-19, the rest at most 9; at most 25 items at 10 or more. The item carries an `outcome:` with a baseline, and an Update line `improvement review <date>: score N (<signal>=<value>)` |
+| Keep current | Each weekly review re-reads the baselines, lowers items whose signal fell, deletes items whose outcome is met, and files at most 3 new items |
+
+- Confidence is a multiplier, so a hypothesis cannot outrank a measured loss of similar size; a low-confidence top item
+  gets a measurement before it gets a build.
+- The score is a ranking aid, not a promise: the unit (minutes) hides unequal cost of a minute, so the Opus pass looks
+  only at the top 5 and may reorder them with a stated reason.
+- Several constraints at once is the common failure: a second constraint is named only after the first one's outcome is
+  met or moved.
+- Run it measure-only first (scores and a table, no priority changes), then apply. The skill is `/improvement-review`.
 
 ## Assess the effect, not the activity
 
@@ -71,11 +96,12 @@ when the item is filed and re-read at the Retro.
 
 ## Budgets and regression guards
 
-- **Instruction counts may fail a gate.** Valgrind-based tools (`gungraun`/iai-callgrind for Rust) count instructions
+- **Instruction counts may fail a gate.** Valgrind-based tools (`gungraun`, the renamed iai-callgrind, for Rust) count instructions
   even on virtual CI machines; use `EXPLAIN` row and buffer counts for SQL and bytes for bundles and payloads
   ([web-loading.md](https://github.com/evocaslab/hq/blob/main/practices/web-loading.md), [egress-and-payload.md](https://github.com/evocaslab/hq/blob/main/practices/egress-and-payload.md)).
 - **Wall-clock benchmarks never fail a gate.** `criterion`, `hyperfine` (`--warmup`, `--prepare` for a cold cache, JSON
-  export) and `pytest-benchmark` append to a history file; a change is flagged against that history.
+  export) and `pytest-benchmark` append to a history file; a change is flagged against that history. Observed
+  2026-11-18: `pytest-benchmark` is declared but unused in report-bot and uv_upgrade (use it or remove it).
 - **Change detection**: an outlier against the benchmark's own history, confirmed by re-runs (Mozilla's sheriffing
   retriggers noisy alerts three times before anyone files). For HQ the `machine-metrics` history plus an IQR fence is
   enough; no hosted benchmark service.
@@ -107,7 +133,8 @@ One chain, every link an id that the next link can read:
 ## Tests as a measured system
 
 - Print the **slowest N** on every full run and keep them: `pytest --durations=10 --durations-min=1.0`, nextest
-  `slow-timeout` with `terminate-after`, Vitest `slowTestThreshold`.
+  `slow-timeout` with `terminate-after`, Vitest `slowTestThreshold`. Observed 2026-11-18: only `evocaslab/ui` sets
+  `--durations`; no other repo does.
 - The quarantine has a **cap** (a number of tests or a number of days); the gate fails when it is exceeded. A retried
   pass is reported as flaky and may be set to fail (`nextest --flaky-result fail`). See
   [testing.md](testing.md#time-concurrency-and-flaky-tests) and the FLAKY_TESTS doc.
@@ -180,3 +207,8 @@ timings in ui, site, vigor, auth, lms or repo-template; no SBOM or provenance an
 - nextest slow tests and retries: <https://nexte.st/docs/features/slow-tests/>, <https://nexte.st/docs/features/retries/>
 - Fowler on non-determinism and quarantine: <https://martinfowler.com/articles/nonDeterminism.html>
 - Claude Code monitoring: <https://code.claude.com/docs/en/monitoring-usage>
+- SAFe, Weighted Shortest Job First (cost of delay over job size; relative estimates; read 2026-11-13):
+  <https://framework.scaledagile.com/wsjf/>; origin: Reinertsen, *The Principles of Product Development Flow*, 2009
+  (second-hand via SAFe write-ups; not read in the original)
+- Theory of Constraints Institute, the five focusing steps (identify, exploit, subordinate, elevate, repeat; read
+  2026-11-13): <https://www.tocinstitute.org/five-focusing-steps.html>; Goldratt, *The Goal*, 1984

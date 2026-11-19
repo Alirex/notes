@@ -1,9 +1,9 @@
 ---
 summary: "Catalogue of rules a machine checks: the guard test, hook or lint per rule, where it exists, copy-ready snippets"
 group: quality
-tags: [tests, lint]
+tags: [testing, lint]
 applies-to: [all]
-reviewed: 2026-11-04
+reviewed: 2026-11-07
 status: stable
 ---
 
@@ -32,7 +32,7 @@ See also [testing.md](testing.md#guard-tests-over-prose) (how to write a guard) 
 | i18n key parity ([i18n.md](https://github.com/evocaslab/hq/blob/main/practices/i18n.md)) | Test: same key set in every locale; `@intlify/vue-i18n/no-raw-text` | HQ `messages.spec.ts`, a Vue app's `usedKeys.spec.ts` |
 | OpenAPI file is current ([testing.md](testing.md)) | Hook: regenerate and diff | HQ `openapi.json is current` |
 | Never weaken a gate to get green ([review-lenses.md](review-lenses.md#gate-integrity)) | Script on the branch diff: new skip/xfail/`only`, fewer assertions or tests, raised timeouts, `--no-verify`, `continue-on-error`, bare suppressions; passes only with a `Gate-change:` commit line | HQ `just q-integrity`, `scripts/quality/check_gate_integrity.py` |
-| No destructive shell command by accident ([agent-security.md](agent-security.md#command-guard)) | `PreToolUse` Bash hook: deny `rm -r` on `/` and `~`, force-push to main; ask on `reset --hard`, `--no-verify`, `DROP TABLE`; deny sleep loops and `sleep` of 30 s or more | HQ `scripts/claude/guard/guard.sh` |
+| No destructive shell command by accident ([agent-security.md](agent-security.md#command-guard)) | `PreToolUse` Bash hook: deny `rm -r` on `/` and `~`, force-push to main; ask on `reset --hard`, `DROP TABLE`; deny `--no-verify`, sleep loops and `sleep` of 30 s or more | HQ `scripts/claude/guard/guard.sh` |
 | Dependencies audited ([supply-chain-security.md](supply-chain-security.md)) | `just q-audit`, `q-deny`, secret scan in the hook | HQ gate |
 
 ## Snippets
@@ -108,7 +108,34 @@ a defect and fix it by class, in this order:
 
 Log every ask and deny with the masked command and the reason, and rank the log (`just cc-guard-asks`), so the
 prompts that repeat are fixed, not the ones remembered. Each fix gets a test of the allowed form, of the unsafe
-neighbour, and an eval task. The `/guard-care` skill is this loop.
+neighbour, and an eval task. The `/guard-care` skill is this loop. A weekly timer without an LLM runs the ranking for
+you: it re-checks each prompt shape against the guard as it is now, writes the still-asking ones with a class guess and
+a next step to one report, and files a single backlog item when a shape asked three times, so nobody has to paste
+screenshots (HQ: `just cc-guard-weekly`, `~/.local/state/hq/guard/weekly.md`).
+
+A deny is not a prompt, but a deny that repeats is the same defect: the guard works and the writer never learns. Rank
+denies as well as asks, count unique ones per day (the log can hold a call twice), and group them by repo and by writer
+kind (a subagent worktree, a managed repo, the supervisor). A deny rate that does not fall means the rule sits only at
+the point of failure. Put it where the writer reads before it acts: the user-level `CLAUDE.md` (reaches every session
+and subagent in every repo), the repo's own AGENTS.md, a `SubagentStart` hook, the brief generator. HQ, 2026-11-08 to
+11: 541 unique denies of `cat >`, `sed -i` and `python3 -` heredocs on repo files in four days, 48 % in one managed
+repo whose AGENTS.md lacked the rule; the rule was only in the supervisor digest and in generated briefs.
+
+## Hook semantics (Claude Code)
+
+A hook is a deterministic guard on the agent itself; the model cannot talk its way past it (read 2026-11-07; see Sources).
+
+- A `PreToolUse` hook that exits 2 blocks the call and feeds its stderr back to the model, so the message must say what
+  to do instead. Exit 0 does not approve: the normal permission flow still applies. With several hooks on one call the
+  most restrictive answer wins.
+- Hook types: `command`, `prompt`, `agent` (experimental), HTTP. Prefer `command` for anything that must be reliable.
+- Evidence over claims: a hook or brief asks for the command that was run and its output, not "tests pass".
+- A `Stop` hook that runs the check and exits 2 on failure keeps the agent working until the check passes. Claude Code
+  lets the agent stop after 8 consecutive blocks with no tool call in between, so the hook is a nudge with a cap, not a
+  hard gate; the real gate stays the commit hook and the landing run ([quality-gate.md](quality-gate.md)).
+- HQ today: a `PreToolUse` Bash guard (`scripts/claude/guard/guard.sh`) and a preflight gate on session and agent
+  starts (`.claude/settings.json`); no `Stop` hook. A `Stop` hook running a fast type check is a candidate, not a rule:
+  measure first that it saves worker round trips and that it does not run a heavy check on every turn.
 
 ## Rules
 
@@ -124,3 +151,6 @@ neighbour, and an eval task. The `/guard-care` skill is this loop.
 - Ruff rules (`S113`, `ASYNC`): <https://docs.astral.sh/ruff/rules/>
 - Clippy `disallowed_methods`: <https://rust-lang.github.io/rust-clippy/master/index.html#disallowed_methods>
 - axe-core Playwright: <https://playwright.dev/docs/accessibility-testing>
+- Hooks: exit code 2 blocks and returns stderr, exit 0 does not approve, most restrictive wins, hook types, a Stop hook
+  with `|| exit 2`, the override after 8 consecutive blocks (read 2026-11-07): <https://code.claude.com/docs/en/hooks-guide>
+- Ask for the command run and its output as evidence (read 2026-11-07): <https://code.claude.com/docs/en/best-practices>

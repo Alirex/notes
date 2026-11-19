@@ -1,7 +1,7 @@
 ---
 summary: "Measure both: MOP (built right, pass/fail limits) and MOE (right thing, outcome achieved); for backlog items, hand-backs and operator views"
 group: agents
-tags: [agents, metrics, ux]
+tags: [agents, observability, ux]
 applies-to: [all]
 reviewed: 2026-11-04
 status: stable

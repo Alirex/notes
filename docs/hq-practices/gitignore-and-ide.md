@@ -1,7 +1,7 @@
 ---
 summary: "What .gitignore lists and which JetBrains .idea files to commit"
 group: quality
-tags: [git, ide]
+tags: [git, tooling]
 applies-to: [all]
 reviewed: 2026-11-01
 status: stable
