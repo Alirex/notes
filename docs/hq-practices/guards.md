@@ -1,7 +1,7 @@
 ---
 summary: "Catalogue of rules a machine checks: the guard test, hook or lint per rule, where it exists, copy-ready snippets"
 group: quality
-tags: [tests, lint]
+tags: [testing, lint]
 applies-to: [all]
 reviewed: 2026-11-07
 status: stable
@@ -32,7 +32,7 @@ See also [testing.md](testing.md#guard-tests-over-prose) (how to write a guard) 
 | i18n key parity ([i18n.md](https://github.com/evocaslab/hq/blob/main/practices/i18n.md)) | Test: same key set in every locale; `@intlify/vue-i18n/no-raw-text` | HQ `messages.spec.ts`, a Vue app's `usedKeys.spec.ts` |
 | OpenAPI file is current ([testing.md](testing.md)) | Hook: regenerate and diff | HQ `openapi.json is current` |
 | Never weaken a gate to get green ([review-lenses.md](review-lenses.md#gate-integrity)) | Script on the branch diff: new skip/xfail/`only`, fewer assertions or tests, raised timeouts, `--no-verify`, `continue-on-error`, bare suppressions; passes only with a `Gate-change:` commit line | HQ `just q-integrity`, `scripts/quality/check_gate_integrity.py` |
-| No destructive shell command by accident ([agent-security.md](agent-security.md#command-guard)) | `PreToolUse` Bash hook: deny `rm -r` on `/` and `~`, force-push to main; ask on `reset --hard`, `--no-verify`, `DROP TABLE`; deny sleep loops and `sleep` of 30 s or more | HQ `scripts/claude/guard/guard.sh` |
+| No destructive shell command by accident ([agent-security.md](agent-security.md#command-guard)) | `PreToolUse` Bash hook: deny `rm -r` on `/` and `~`, force-push to main; ask on `reset --hard`, `DROP TABLE`; deny `--no-verify`, sleep loops and `sleep` of 30 s or more | HQ `scripts/claude/guard/guard.sh` |
 | Dependencies audited ([supply-chain-security.md](supply-chain-security.md)) | `just q-audit`, `q-deny`, secret scan in the hook | HQ gate |
 
 ## Snippets
@@ -112,6 +112,14 @@ neighbour, and an eval task. The `/guard-care` skill is this loop. A weekly time
 you: it re-checks each prompt shape against the guard as it is now, writes the still-asking ones with a class guess and
 a next step to one report, and files a single backlog item when a shape asked three times, so nobody has to paste
 screenshots (HQ: `just cc-guard-weekly`, `~/.local/state/hq/guard/weekly.md`).
+
+A deny is not a prompt, but a deny that repeats is the same defect: the guard works and the writer never learns. Rank
+denies as well as asks, count unique ones per day (the log can hold a call twice), and group them by repo and by writer
+kind (a subagent worktree, a managed repo, the supervisor). A deny rate that does not fall means the rule sits only at
+the point of failure. Put it where the writer reads before it acts: the user-level `CLAUDE.md` (reaches every session
+and subagent in every repo), the repo's own AGENTS.md, a `SubagentStart` hook, the brief generator. HQ, 2026-11-08 to
+11: 541 unique denies of `cat >`, `sed -i` and `python3 -` heredocs on repo files in four days, 48 % in one managed
+repo whose AGENTS.md lacked the rule; the rule was only in the supervisor digest and in generated briefs.
 
 ## Hook semantics (Claude Code)
 

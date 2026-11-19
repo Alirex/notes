@@ -3,7 +3,7 @@ summary: "Docs, backlog, changelog and decisions laid out so parallel agents don
 group: docs
 tags: [docs, backlog]
 applies-to: [all]
-reviewed: 2026-10-28
+reviewed: 2026-11-12
 status: stable
 ---
 
@@ -123,7 +123,18 @@ no second index file. Agents start at the root AGENTS.md, which links it.
 Docs in English; glossaries and places with domain terms in another language
 keep both forms.
 
+## Finished work is generated
+
+Keep "finished = the item's file is deleted in the landing commit" and generate the record of finished work from git
+instead of keeping a file: list the deleted backlog files with the id, filed and done dates (lead time), the landing
+commits that cite the id, and a kind (landed, moved, pruned, closed) so a bulk hand-over or clean-up is not counted as
+delivered work. The changelog stays written by hand: a generated one is raw material only
+([Keep a Changelog](https://keepachangelog.com/en/1.1.0/): do not dump git logs). HQ: `just docs-done`.
+
 ## Sources
+
+- Keep a Changelog 1.1.0, "Guiding principles" and "How do I make a good change log?" (changelogs are for humans, not
+  commit dumps): <https://keepachangelog.com/en/1.1.0/>
 
 - Architecture decision records (decision, rationale, consequences) as the model for `decisions/`:
   <https://adr.github.io/> (the page does not define the Context and Status fields; those follow common ADR templates)

@@ -1,9 +1,9 @@
 ---
 summary: "A backlog item is the spec: how much spec an item needs by size (Done when, Not in scope, Open), who may edit it, and how it is checked at landing"
 group: agents
-tags: [agents, workflow, backlog, spec]
+tags: [agents, workflow, backlog]
 applies-to: [all]
-reviewed: 2026-11-07
+reviewed: 2026-11-15
 status: draft
 ---
 
@@ -23,13 +23,27 @@ and decay, and the depth must follow the size. So we add the missing parts and g
 | `l` | + `## Plan` (premise, files, steps), `## Not in scope`, `## Open` (questions, or "none") | the supervisor, or a Haiku spec check: every Done-when line testable, no open question, the whole request covered |
 | `xl` | split first | n/a |
 
-A Done-when line says how it is shown: a command and its result, a screen, a test name. Behaviour reads "when X, Y".
+Two more sections, only when the work calls for them. The idea (opinion, from architecture talks on agent work, not a
+verified fact): an agent fills an isolated block well once a human fixed its boundary, and cannot infer limits such as
+failure, load, volume or business invariants from the code, so those are written down first.
+
+- `## Contract` (an `l` item that adds or crosses a boundary): the file and symbols, written by the supervisor before the
+  brief: port signature, types, error cases ([ports](use-cases-and-domain-model.md#the-tactical-blocks)). A worker that
+  finds the contract wrong says so under Progress and does not edit it. `repos-dod` prints `contract touched: <path>`
+  when the diff changes a path named there, so the review reads that part of the diff first.
+- `## Must hold` (an `l` code item, or an `m` item that touches stored data or an external system): business
+  invariants ("a deal is matched by id, never by name") and one line each for two actors at once, a dependency down, a
+  time or size budget, and the expected data volume, or "none". Each line says how it is checked. A use case's
+  extension lines cover detectable conditions only; these are the ones nobody sees until production.
+
+A Done-when line says how it is shown: a command and its result, a screen, a test name. Behaviour reads "when X, Y"
+(givens, event, outcome; the lines are the worker's test list, [tdd.md](tdd.md)).
 Docs and infra items use plain checkable lines, not a notation. Keep an item short: about 10 Done-when lines at most; more
 means split it.
 
 ## Who owns what
 
-- The worker edits Progress. Done when and Not in scope are the supervisor's: a worker that finds one wrong says so in
+- The worker edits Progress. Done when, Not in scope, Contract and Must hold are the supervisor's: a worker that finds one wrong says so in
   Progress; the supervisor edits it with a one-line reason. A worker never weakens a line to pass.
 - At review the lens "diff against Done when" applies: each line is met with evidence or "not met (why)" in the hand-back.
 - A partial landing rewrites Done when to what is left. A full landing deletes the item; durable facts go to
@@ -38,7 +52,8 @@ means split it.
 ## Verify against the spec
 
 Check the diff against the item with a reader that did not write it: a fresh, read-only subagent (or the local model)
-that gets the item (Done when, Not in scope) and the diff, not the writer's reasoning. The prompt: "Report gaps that
+that gets the item (Done when, Not in scope, and Contract and Must hold when the size calls for them; the check also
+reports a missing section) and the diff, not the writer's reasoning. The prompt: "Report gaps that
 affect correctness against this spec; skip style." Without "skip style" a reviewer always finds something, and fixing
 every finding adds layers nobody asked for. The output is a list of gaps with `file:line`, each marked met, not met
 or unclear; the supervisor decides. This is the "diff against Done when" lens of [review-lenses.md](review-lenses.md)

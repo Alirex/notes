@@ -1,7 +1,7 @@
 ---
 summary: "Evaluating an agent harness (prompt, tools, skills, hooks, context) with evals: task set from real failures, clean trials, layered graders, pass@k vs pass^k, controlled infrastructure, transcripts read"
 group: agents
-tags: [agents, evals, harness, testing, llm]
+tags: [agents, testing, llm]
 applies-to: [all]
 reviewed: 2026-11-07
 status: draft
@@ -126,6 +126,8 @@ unit tests already pin what the guard does today; the eval adds what it should d
   <https://www.getwidget.dev/blog/how-to-evaluate-ai-agents/>,
   <https://tianpan.co/blog/2026/02/07/evaluating-ai-agents-trajectories-not-just-outcomes>
 - Observed in HQ (2026-11): the first eval is the command guard's (`just cc-guard-eval`, see the example above); the
-  other rows of the table are still proposals.
+  other rows of the table are still proposals. The second is the MCP search eval
+  (`crates/hq-mcp/eval/search_tasks.yaml`, printed by `just mcp-check`): 40 queries, 8 of them holdout; whole-query
+  substring scored recall@5 25 % with 75 % empty results, word-ranked BM25 scored 100 % and 0 % (2026-11-13).
 - Workflows (fixed code paths) against agents (the model directs the loop), simplest thing first, cost and compounding
   errors (read 2026-11-07): <https://www.anthropic.com/engineering/building-effective-agents>

@@ -1,7 +1,7 @@
 ---
 summary: "One recipe vocabulary in every repo: core names, groups, customising, distribution, drift check, aliases"
 group: quality
-tags: [just, recipes, repo-template, conventions]
+tags: [just]
 applies-to: [all]
 reviewed: 2026-11-01
 status: draft
@@ -27,7 +27,7 @@ Every repo provides these names, in the group shown, with the meaning below. Nam
 | quality | `q-test` | Tests only, no fixers, no rewriting of files; exit code = test result. |
 | quality | `q-lint` | Formatter plus linter with fixers (may rewrite files; review `git diff`). There is no separate `q-fmt`: every repo's formatter runs inside `q-lint`. |
 | quality | `q-types` | The authoritative type check, read-only. |
-| quality | `q-passed`, `q-integrity`, `q-secrets` | Exit 0 if the clean tree passed `q-check`; flag a diff that weakens a gate; scan history for secrets. |
+| quality | `q-passed`, `q-precheck`, `q-integrity`, `q-secrets` | Exit 0 if the clean tree passed `q-check`; the cheap checks (lint, fast types) a ship runs before it waits for the heavy lock, the failing stage on the last output line; flag a diff that weakens a gate; scan history for secrets. |
 | setup | `setup-all`, `setup-check`, `setup-hooks`, `setup-just`, `setup-shortcuts`, `setup-upgrade` | See [just-task-runner.md](just-task-runner.md#setup-recipes); `setup-check` is read-only and exits 1 when a required item is missing; all idempotent. |
 | docs | `docs-backlog`, `docs-backlog-check`, `docs-questions`, `docs-questions-ask`, `docs-actions`, `docs-actions-add`, `docs-chores` | Backlog, maintainer questions and manual actions; checks exit 1 on a bad item. |
 | claude | `cc-1`, `cc-2`, `cc-up`, `cc-down`, `cc-ls`, `cc-rc`, `cc-rc-down`, `cc-rc-autostart` (+ `-off`, `-ls`) | Claude Code sessions in tmux. |
@@ -44,7 +44,8 @@ Rules for every core recipe: the name and group are fixed; it never prompts; ext
 
 Names fixed for repos that have the area (not required elsewhere): `db-upgrade`, `db-revision`, `db-check`; `dk-up`, `dk-down`, `dk-logs`,
 `dk-build`, `dk-update`, `dk-autoupdate*` (prefix `dk-`, group `docker`, never `docker-` or `app-`); `web-dev`, `web-build`, `web-test`, `web-check`,
-`web-install` (prefix `web-`, group `web`, never `w-`); `g-` desktop GUI, `rust-` Rust tooling, `vm-` dev VM, `as-` assets, `llm-`. The
+`web-install` (prefix `web-`, group `web`, never `w-`); `prof-` profiling (`prof-cmd`, `prof-rust`, `prof-py`,
+`prof-sh`: [profiling.md](profiling.md); `just --time` shows each recipe's run time); `g-` desktop GUI, `rust-` Rust tooling, `vm-` dev VM, `as-` assets, `llm-`. The
 typical-prefix list in [just-task-runner.md](just-task-runner.md#layout) is amended to match.
 
 ## Customising

@@ -1,7 +1,7 @@
 ---
 summary: "Researching health and supplement claims with subagents: evidence levels, sourcing rules, blocked sources, no personal advice"
 group: agents
-tags: [research, health, supplements, docs, subagents]
+tags: [research, docs, subagents]
 applies-to: [all]
 reviewed: 2026-11-01
 status: draft

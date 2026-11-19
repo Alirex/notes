@@ -1,9 +1,9 @@
 ---
-summary: "Profile before optimizing: the tool per layer (py-spy, flamegraph/samply, Vitest slow tests, EXPLAIN, DevTools), reading flame graphs, slow tests, low-load repeat runs, gate speed budget"
+summary: "Profile before optimizing: the tool per layer (Rust samply, Python py-spy, shell, Vite, Vitest, EXPLAIN, DevTools), tracing conventions, tools on demand and a skip list, reading flame graphs, low-load repeat runs, gate speed budget"
 group: quality
-tags: [performance, tests, tooling]
+tags: [performance, testing, tooling]
 applies-to: [all]
-reviewed: 2026-11-04
+reviewed: 2026-11-18
 status: draft
 ---
 
@@ -12,6 +12,28 @@ status: draft
 How to find where time goes before changing code, and how to keep a gate fast. A guess about the slow part is wrong
 often enough that no optimization starts without a measurement. The gate itself:
 [quality-gate.md](quality-gate.md); the tests that feed it: [testing.md](testing.md).
+
+## Before you start
+
+Check what is installed and what the kernel allows; a profiler that fails on a sysctl wastes a turn.
+
+- Installed tool check: `command -v samply cargo-flamegraph py-spy hyperfine tokio-console perf strace bpftrace`.
+  On the HQ machine (2026-11-18) `perf`, `strace`, `bpftrace`, `tcpdump`, `/usr/bin/time`, `jq` and chromium exist;
+  `samply`, `cargo-flamegraph`, `py-spy`, `hyperfine` and `tokio-console` do not (`cargo install --locked samply
+  hyperfine`; `uvx py-spy` needs no install). There is no nightly Rust toolchain, so `cargo-fuzz`, AddressSanitizer,
+  ThreadSanitizer and bytehound are out until one is installed.
+- Kernel settings (read with `sysctl <name>`):
+
+  | Setting | Here | Effect |
+  | --- | --- | --- |
+  | `kernel.perf_event_paranoid` | 4 | `perf`, samply and cargo-flamegraph fail for a normal user; set `1` with `sudo sysctl kernel.perf_event_paranoid=1`, persisted in `/etc/sysctl.d/90-hq-perf.conf`, or run them with sudo |
+  | `kernel.yama.ptrace_scope` | 1 | py-spy launching a child (`py-spy record -- cmd`) needs no root; attach by pid needs root |
+  | `kernel.kptr_restrict` | 1 | kernel symbols are hidden; user-space profiles are fine |
+
+- The shell's `grep` is a ugrep wrapper that honours `.gitignore`; to search the clones under `repos/` use
+  `rg --no-ignore`.
+- HQ's `prof-` recipes wrap these tools (`just prof-cmd`, `prof-rust`, `prof-py`, `prof-sh`, `prof-pg`, `prof-load`;
+  each prints one result line, or `missing tool: install with ...`); rollout item `B-261118-profiling-toolkit-rollout`.
 
 ## The tool per layer
 
@@ -34,6 +56,18 @@ A sampling profiler that attaches from outside, so the code needs no change.
   generally does not. In Docker the container needs `--cap-add SYS_PTRACE`.
 - Wall-clock time and CPU time differ: a flame graph of only on-CPU samples hides waiting on a database, network or
   lock. If total run time is far above CPU time, profile with `--idle` or look at the database layer.
+- For a uv script: `uvx py-spy record -o profile.svg --subprocesses -- uv run --script x.py` (`--subprocesses`,
+  because `uv run` starts the interpreter as a child).
+- Python 3.15 ships a sampling profiler in the standard library: `python -m profiling.sampling run script.py`. The
+  profiler and the target must be the same minor version; the machine's Python is 3.14, so use
+  `uv run --python 3.15 python -m profiling.sampling ...`.
+- `pyinstrument` (a statistical call-tree profiler, `uvx pyinstrument script.py`) reads better than a flame graph for
+  a short script. `memray` answers "who allocates the memory" (`memray run`, `memray flamegraph`); use it only for a
+  memory question.
+- Start cost of a Typer CLI is import cost: `python -X importtime script.py 2> imports.txt`, then sort by the
+  cumulative column; heavy imports move inside the command that needs them.
+- Slowest tests: `pytest --durations=10 --durations-min=1.0` on every full run, already required by
+  [continuous-improvement.md](continuous-improvement.md#tests-as-a-measured-system).
 
 ### Rust: cargo flamegraph and samply
 
@@ -49,6 +83,45 @@ A sampling profiler that attaches from outside, so the code needs no change.
 - `samply record ./target/profiling/app args` runs the binary, records stacks, and opens the Firefox Profiler on a
   local server: flame graph, call tree, timeline, and per-line sample counts in the source view. Prefer it when the
   program has several threads or when the timeline matters; prefer `cargo flamegraph` for a single quick SVG.
+- Defaults: add `[profile.profiling]` with `inherits = "release"` and `debug = true`, build with
+  `cargo build --profile profiling`, and start with samply (`cargo install --locked samply`). Compare two commands
+  with `hyperfine --warmup 3 'a' 'b'` (`--export-json` for the history file). Wall-time benchmarks: criterion or
+  divan, recorded, never gating ([continuous-improvement.md](continuous-improvement.md#budgets-and-regression-guards)).
+- On demand: `dhat` (heap profile, `dhat-heap` feature, for an allocation question); `tokio-console` and
+  `tokio-metrics` for a stuck or slow async task (they need `RUSTFLAGS="--cfg tokio_unstable"`, which is a separate
+  full rebuild, never in normal builds); `cargo-bloat` (what makes the binary big); `cargo-show-asm` (the assembly of
+  one function).
+- Stable against nightly:
+
+  | Needs | Stable | Nightly only |
+  | --- | --- | --- |
+  | Profiling, flame graphs, hyperfine, criterion, divan, dhat | yes | |
+  | `tokio-console` (`tokio_unstable` cfg, not nightly) | yes | |
+  | `cargo-fuzz`, AddressSanitizer, ThreadSanitizer, bytehound | | yes |
+
+- Tracing conventions (the `tracing` crate): one span per unit of work (request, job, command) named by the
+  operation, fields for ids and counts, never payloads or personal data; `#[instrument(skip_all, fields(...))]` on
+  public async functions that call out, so a secret argument never lands in a field; the request id minted at the edge
+  is forwarded to the next process in a header (hub to outpost) and put on the span of the callee; a panic hook logs
+  the panic with its backtrace through `tracing` before the process dies (pattern: the GUI crate's
+  `logging.rs:113` in the combat-gui repo).
+
+### Shell and recipes
+
+- Which line of a bash script is slow: `PS4='+ ${EPOCHREALTIME} ${BASH_SOURCE##*/}:${LINENO}: ' bash -x script.sh
+  2> trace.txt`, then diff the timestamps. `EPOCHREALTIME` needs bash 5; the macOS bash 3.2 has none.
+- Whole-command cost: `/usr/bin/time -v cmd` (wall, CPU, peak memory); system calls: `strace -f -c cmd` (counts and
+  time per call, children included); comparison of two commands: `hyperfine`.
+- `just --time` prints each recipe's run time and `just --timestamp` stamps every line (`just` has no `--timings`).
+
+### Vite and Vue
+
+- `vite build --profile` records the build and writes `vite-profile-0.cpuprofile`; open it in speedscope. It shows
+  which plugin costs build time, not what is in the bundle.
+- What is in the bundle: `rollup-plugin-visualizer` (output not committed). A budget in CI: `size-limit` with
+  `@size-limit/file`, set to the measured brotli size plus 10 %; a failure prints which file grew.
+- Playwright trace rule: `trace: 'retain-on-failure'` when `retries` is 0, `'on-first-retry'` when `retries` is above
+  0 (otherwise the trace never exists). Open it with `npx playwright show-trace`.
 
 ### JavaScript tests: Vitest
 
@@ -87,6 +160,28 @@ A sampling profiler that attaches from outside, so the code needs no change.
   First Contentful Paint, Speed Index, Total Blocking Time, Largest Contentful Paint and Cumulative Layout Shift.
   The DevTools tab can audit pages behind a login. Use it to find what to look at, then use the Performance panel
   to find which code is responsible.
+
+## Tools on demand
+
+Not installed or run by default; each has the trigger that makes it worth it.
+
+| Tool | Trigger |
+| --- | --- |
+| `oha` load smoke (`oha -n 2000 -c 20 URL`) | before a release of an endpoint with a new query or a new cache; a smoke, not a capacity test |
+| Fuzzing (`cargo-fuzz`, needs nightly) | a parser or decoder of untrusted input |
+| Sanitizers (nightly) | unsafe code, or a data race that tests cannot reproduce |
+| GlitchTip (Sentry-compatible, about 256-512 MB) | the first service with real users and no error tracker; self-hosted Sentry needs 16 GB, skip it |
+| OpenTelemetry traces (Rust traces are still Beta) | a request spanning 3 or more of our own services, as in [observability-and-incidents.md](https://github.com/evocaslab/hq/blob/main/practices/observability-and-incidents.md#tracing-across-services) |
+
+## Skipped, with reasons
+
+- An OpenTelemetry collector now: no request spans three services; the request id answers it.
+- Prometheus and Grafana: `metrics.db` already covers the numbers we read.
+- Self-hosted Sentry (16 GB); `tokio_unstable` in normal builds (a full rebuild and a cost in every binary).
+- `gungraun` (valgrind) as a gate: wall time is recorded, instruction counts only where a repo asks.
+- Lighthouse CI for apps behind a login (it cannot reach the pages); use the DevTools tab there.
+- `k6`, `locust`, `vegeta`: `oha` is enough for a smoke.
+- `scalene`, `snakeviz`, `heaptrack`, `lnav`, `vector`, `mitmproxy`: a tool already named above covers each.
 
 ## Reading a flame graph
 
@@ -187,3 +282,24 @@ See also [continuous-improvement.md](continuous-improvement.md): baseline, budge
 - Chrome for Developers, "Analyze runtime performance" (Performance panel): https://developer.chrome.com/docs/devtools/performance
 - Chrome for Developers, Lighthouse overview: https://developer.chrome.com/docs/lighthouse/overview
 - Brendan Gregg, "Flame Graphs": https://www.brendangregg.com/flamegraphs.html
+
+Read 2026-11-18 (the tools were not run):
+
+- samply: <https://github.com/mstange/samply>
+- tokio-console: <https://github.com/tokio-rs/console>
+- tokio-metrics: <https://github.com/tokio-rs/tokio-metrics>
+- dhat: <https://docs.rs/dhat>
+- criterion: <https://github.com/criterion-rs/criterion.rs>
+- divan: <https://github.com/nvzqz/divan>
+- Python `profiling.sampling`: <https://docs.python.org/3/library/profiling.sampling.html>
+- py-spy releases: <https://github.com/benfred/py-spy/releases>
+- pyinstrument: <https://github.com/joerick/pyinstrument>
+- memray: <https://github.com/bloomberg/memray>
+- hyperfine: <https://github.com/sharkdp/hyperfine>
+- Vite troubleshooting (`--profile`): <https://vite.dev/guide/troubleshooting>
+- rollup-plugin-visualizer: <https://github.com/btd/rollup-plugin-visualizer>
+- size-limit: <https://github.com/ai/size-limit>
+- Playwright trace viewer: <https://playwright.dev/docs/trace-viewer>
+- oha: <https://github.com/hatoo/oha>
+- GlitchTip install: <https://glitchtip.com/documentation/install>
+- Sentry self-hosted: <https://develop.sentry.dev/self-hosted>

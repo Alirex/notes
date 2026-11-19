@@ -1,7 +1,7 @@
 ---
 summary: "A change to behavior updates the docs that describe it in the same commit; how to find them and check it"
 group: docs
-tags: [docs, agents, process]
+tags: [docs, agents, workflow]
 applies-to: [all]
 reviewed: 2026-11-08
 status: stable
@@ -43,6 +43,8 @@ commit** as the change that touches it (a command, flag, config key, recipe, out
   command that fails in the README is a failing test.
 - **Put the rule where agents read it:** the repo's AGENTS.md says "the README is updated in the same commit" and
   names the Quick start as the front door.
+- **How to build it** (first screen, when to split, what PyPI, crates.io and npm do to links, generated blocks,
+  badges, pictures, the check per cause of drift): [readme-design.md](readme-design.md).
 - **Merge, don't fork, a README rewrite:** when a branch rewrites the README, merge it into the next branch that
   touches the config or commands before editing, or the two versions conflict and one goes stale.
 

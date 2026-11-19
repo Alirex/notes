@@ -1,9 +1,9 @@
 ---
 summary: "Asking the maintainer through issues, defaults, blocking, manual-action issues"
 group: agents
-tags: [agents, issues]
+tags: [agents, backlog]
 applies-to: [all]
-reviewed: 2026-10-29
+reviewed: 2026-11-12
 status: stable
 ---
 
@@ -11,7 +11,8 @@ status: stable
 
 Agents, above all unattended ones ([autonomous-sessions.md](autonomous-sessions.md)), hit judgment calls that only
 the maintainer can make. They ask as a **GitHub issue with the label `maintainer-question`** in the repo the
-question is about, take a safe default, and keep working.
+question is about, take a safe default, and keep working. In HQ itself, and for a question that spans repos, the issue
+lives in HQ (`just docs-questions-ask`); HQ's AGENTS.md states that case.
 
 ## Why issues, not a file in git
 
@@ -43,6 +44,10 @@ it):
 1. Keep the key file; losing it resets 2FA for everyone. *(default, done meanwhile)*
 2. Derive the key from a passphrase prompted at start.
 
+**Recommendation.** One line: the option you would pick and why.
+
+**Default if unanswered:** option 1, applied on YYYY-MM-DD (3 days from now unless you set another).
+
 **Run.** Only when an option needs the maintainer to run something ([Commands](#commands)).
 
 In `~/dev/hq`:
@@ -61,6 +66,12 @@ Backlog: B-261023-webauthn · Branch: feat/totp · Asked by: <session name>
 - **Not blocking** (the usual case): take the safest option that is easy to undo, do it, keep going. A different
   answer later becomes a follow-up item. After 7 days without an answer the default stands: comment
   `Defaulted to option <n>; comment to change it.`, add the label `defaulted` and close it.
+- **Every non-blocking question carries two lines**: a one-line recommendation and `Default if unanswered: <X>, applied
+  on <date>` (3 days after asking unless the asker sets another). `just docs-questions digest` lists the open ones by
+  repo, most blocking first, and marks a question past its date **default due**. Applying a due default is a supervisor
+  step of the `/fleet` round: comment `Defaulted to <X>; comment to change it.` (marked `<!-- agent -->`) and tell the
+  asker session; the issue stays open, so the maintainer can still overturn it. Never auto-defaulted: blocking
+  questions and any labelled `needs-decision` (legal, money, public publishing).
 - **Blocking** (`--blocking`, label `blocking`): only when every option is hard to undo (data migrations,
   deletions, public names, money, anything outward-facing). Do not choose; set the backlog item to `design` with a
   link to the issue, and pick other work. Never defaulted: it waits for the answer.
@@ -72,6 +83,20 @@ Backlog: B-261023-webauthn · Branch: feat/totp · Asked by: <session name>
 
 Comment on the issue: an option number (`2`), several (`1, 3`: the HQ web app posts that when more than one option is ticked), a number with changes, or free text. In chat with an agent works too:
 the agent posts the answer as a comment (starting `Answer from chat:`), so the record is the same.
+
+**Agent comments.** Agents and the maintainer share one GitHub login, so any comment counts as the answer unless it
+carries the line `<!-- agent -->`. Every comment an agent adds to a question that is not the maintainer's answer (a
+progress note, a question back, "point 9") starts with that line; `questions.sh ls`, `answered` and `wait` ignore marked
+comments; `just cc-watch` reads comments the same way (a question whose only comments are marked is not answered). A
+relayed `Answer from chat:` comment is the answer and stays unmarked. (A single stray agent comment once made a
+question show "answered 138 h ago, still not applied" and sessions went looking for an answer that did not exist.)
+
+**Applied.** The last step of acting on an answer is `just docs-questions applied <owner/repo>#<n> [--note TEXT]`
+(`questions.sh applied <n>` inside the repo): it adds the label `applied` (created on first use) and one marked comment.
+A question with that label is listed nowhere as answered, flagged by `cc-watch` or counted as work, even while the
+issue stays open. Without the label an answered question looks unapplied: the fleet keeper turns one still open 2 h
+after it first saw the answer into an `answered:` attention line for the supervisor, with the exact command. Nothing
+wakes an asking session by itself; a banner line says "waiting for the supervisor" until someone applies it.
 
 Where to look: `just docs-questions` in HQ (every repo), `scripts/docs/questions.sh ls` in a repo, or the GitHub app
 with the filter `is:open label:maintainer-question author:@me`.
@@ -103,6 +128,8 @@ aside without answering it:
   after each land; an answered question comes before new work. Any session may act on it: the asker may be gone.
 - The work goes through the repo's normal branch and landing. Mention `#<n>` in the commit message, so GitHub links
   the commit to the question. A lasting choice also gets a decision file or a changelog line.
+- Mark it applied first: `just docs-questions applied <owner/repo>#<n> --note "<what changed>"` (the supervisor,
+  `/autopilot` and `/fleet` step 1 do this as the last step of applying an answer, also when the answer changed nothing).
 - Then close it: `gh issue close <n> --comment "Applied in <commit or branch>."`. A question that no longer matters:
   `gh issue close <n> --reason "not planned" --comment "Withdrawn: <why>."`.
 
@@ -131,6 +158,20 @@ An answer or a changed action reaches the agent three ways, fastest first:
 - **The next round.** A session that ended never hears; the repo's next session (`/fleet`, `/autopilot`, or a
   person) checks `questions.sh answered` and `actions.sh closed` (the last 7 days, with each one's last comment) at
   start and between items, and the backlog item that waits on an action links it.
+
+## Replying to one concrete message
+
+A short answer ("yes, archive") is only as good as the match to its ask. Three ways to point it, best first:
+
+- **`@handle`** at the start of the prompt, or `re handle:`. The handle is the first column of every `cc-fleet-round`
+  row (a ledger session such as `hq-stop-hooks`, an `owner/repo#n` question, a backlog id or an `R-…` id). The
+  request hook prints `route: <handle> -> local_<id>`, and the supervisor forwards your words to that session with
+  `SendMessage` instead of answering from its own context. An unknown handle prints `route: no such handle`.
+- **Quote the message** in the desktop app (select the text, then the quote action), then type the answer.
+- **Answer on the question issue** ([Answering](#answering)) when the ask is a `maintainer-question`.
+
+With several open asks and a bare "yes", the supervisor restates which ask it applies to and does nothing outward-facing
+on a doubtful match.
 
 ## Without `gh`
 

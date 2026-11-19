@@ -1,7 +1,7 @@
 ---
 summary: "Team of Teams lessons for agent fleets and human teams: autonomy bought with visibility, context before authority, shared reasoning, hand-off measures, rhythm, and what was studied and not taken"
 group: agents
-tags: [agents, fleet, management, teams, autonomy, visibility, delegation]
+tags: [agents, supervision]
 applies-to: [all]
 reviewed: 2026-11-08
 status: draft

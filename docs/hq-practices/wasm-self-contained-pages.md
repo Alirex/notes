@@ -1,7 +1,7 @@
 ---
 summary: "One-file interactive HTML with embedded Rust wasm: build profile and size, one engine for CLI and page with a staleness gate, inline CSP, SVG canvas accessibility, headless Chrome checks"
 group: docs
-tags: [wasm, html, diagrams, rust]
+tags: [frontend, diagrams, rust]
 applies-to: [all]
 reviewed: 2026-11-07
 status: stable

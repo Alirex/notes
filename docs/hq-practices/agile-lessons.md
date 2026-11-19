@@ -1,7 +1,7 @@
 ---
 summary: "What to take from Agile, Kanban and Shape Up for a flow of one maintainer and agents: Definition of Done, WIP limits, cycle time, appetite, weekly metrics"
 group: agents
-tags: [agents, workflow, process, kanban]
+tags: [agents, workflow]
 applies-to: [all]
 reviewed: 2026-11-01
 status: draft

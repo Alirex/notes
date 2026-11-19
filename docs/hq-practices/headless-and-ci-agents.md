@@ -1,7 +1,7 @@
 ---
 summary: "Running the coding agent unattended (headless, CI, GitHub Actions): flags, permissions, secrets, cost caps, plugins, rollout order"
 group: agents
-tags: [agents, ci, security, headless]
+tags: [agents, ci, security]
 applies-to: [all]
 reviewed: 2026-11-07
 status: draft

@@ -1,7 +1,7 @@
 ---
 summary: "Organizing just recipes and helper scripts"
 group: quality
-tags: [just, recipes]
+tags: [just]
 applies-to: [all]
 reviewed: 2026-11-08
 status: stable
@@ -134,7 +134,8 @@ A script outside any uv project (or one that must not need the project's venv) i
 
 A notes or docs repo (HQ itself) keeps the same layout with fewer modules: Python helpers are uv scripts
 (see below), the checkers (ruff, shellcheck, markdownlint, the justfile formatter) are prek hooks that bring
-their own tools, and `q-check` is just `prek run --all-files`. Repo-specific checks are `local` hooks.
+their own tools, and `q-check` runs every prek hook on all files (HQ's `scripts/quality/gate.sh` wraps `prek run --all-files` with the
+pass record and timing: [quality-gate.md](quality-gate.md#pass-record)). Repo-specific checks are `local` hooks.
 Example: HQ's `just/`, `scripts/` and `.pre-commit-config.yaml`.
 
 Which recipe names exist in every repo: [just-recipe-vocabulary.md](just-recipe-vocabulary.md).

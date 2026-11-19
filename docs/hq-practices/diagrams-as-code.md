@@ -3,7 +3,7 @@ summary: "Diagrams as text: which tool per diagram class, a gate that parses and
 group: docs
 tags: [docs, diagrams]
 applies-to: [all]
-reviewed: 2026-11-07
+reviewed: 2026-11-09
 status: stable
 ---
 
@@ -177,6 +177,19 @@ reshuffle it on every change; run it with `just docs-diagram`.
 - **Parallel agents on one crate:** give each its own worktree and file area, have them commit without pushing, and
   cherry-pick them one by one; conflicts concentrate in the shared page file and the string table, so put each feature
   in a marked block (`/* a11y begin */ ... end */`) and regenerate the golden file and the wasm only once at the end.
+
+Lessons from adding the UML activity and state vocabulary to the Atlas flow renderer (2026-11-09):
+
+- **Use the standard notation, not house shapes.** Initial and final dots, guarded `[cond]` decisions, merge diamonds,
+  fork bars, swimlanes, dotted notes and the call rake are read without a key by anyone who knows UML; a `legend` is
+  for the rest and stays opt-in.
+- **Split many-way decisions into yes/no ones.** A four-way decision put four guards on one corner; chained binary
+  decisions with a merge at the end read cleanly and match the code's `if` chain.
+- **Join parallel arrows.** Two transitions between the same pair drew labels on top of each other; one arrow with the
+  texts stacked is clearer and is what UML tools do.
+- **Rasterise every changed picture and look at it, light and dark.** A duplicated `fill` attribute passed in browsers
+  but made resvg refuse the file, and a side exit ran through a box of the same row; neither showed in the tests until a
+  PNG was opened. Add a test for each such defect (no repeated attribute, no edge through a box).
 
 ## Sources
 

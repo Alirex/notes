@@ -1,9 +1,9 @@
 ---
 summary: "Branching, parallel agents, landing work on main"
 group: agents
-tags: [git, worktrees]
+tags: [git]
 applies-to: [all]
-reviewed: 2026-11-08
+reviewed: 2026-11-15
 explainer: [landing-claims, worktrees-and-landing]
 quiz: [landing-claims, worktrees-and-landing]
 path: 1
@@ -21,7 +21,8 @@ A workflow for one maintainer with several agents working in parallel.
 ## Isolation
 
 - Never edit or commit on `main`. Each task gets a branch in its own worktree.
-- Keep worktrees inside the clone (`.worktrees/<short-name>`, gitignored). IDEs
+- Keep worktrees inside the clone (`.worktrees/<short-name>` or `.claude/worktrees/<short-name>`, gitignored:
+  [Where worktrees live](#where-worktrees-live)). IDEs
   and agent sandboxes trust the workspace root; sibling `../x` checkouts trigger
   permission prompts. HQ's command guard denies `git worktree add` with a path outside the repo (allowed: a relative
   path, `~/dev/hq/`, the session scratchpad, `~/.cache/hq-measure/`): cleanup, status and conformance checks look only
@@ -36,6 +37,8 @@ git worktree add -b feat/<short> .worktrees/<short> origin/main
 - One worktree per independent task; never two agents on the same files.
 
 ## Fan-out sizing and conflicts
+
+Generated-file conflicts, landing queues and the tiered gate: [parallel-work-and-landing.md](parallel-work-and-landing.md).
 
 - **Conflicts are prevented, not resolved.** Give each worker its own files; the plan lists the files per unit before
   anyone starts, and two units that touch the same file become one unit or run one after the other. Worktrees isolate
@@ -91,6 +94,8 @@ rejected commit on `main` (Optiomni, 2026-11-04: `just repos-land` landed a scri
 had to land). Run one gate per worktree at a time. A branch that is behind `main` shows the newer main files as deleted
 in `git diff --stat origin/main`: merge `origin/main` before judging a diff or gating.
 
+### A shared install symlink stays untracked
+
 A worktree's `node_modules` symlink (made to share the install) must stay untracked. A builder that runs `git add -A`
 commits it, and a worktree with the untracked symlink makes `repos-land` print "NOT finished": check
 `git ls-files web/node_modules` on a builder's branch, `git rm --cached` it, and remove the symlink before
@@ -123,6 +128,11 @@ Show a numbered menu (PR / merge / push branch only / stop) when:
 - the result only partly does what was asked, or contains a judgment call.
 
 A numbered menu lets the user answer with one character from a phone.
+
+**Split before asking.** When only some files of a branch hit the list (a CI workflow, deploy config), do not hold the
+whole branch: put those files on a branch of their own, land the rest by the normal rules, and ask only about the split-off
+part. Done at the start (separate commits, ideally separate branches) it costs nothing; discovered at landing it costs a
+round trip of the maintainer's time. The agent brief says which files are outward-facing so the worker splits them.
 
 When stopping, end the reply with a run command from the **feature worktree**
 (`cd <repo>/.worktrees/<short> && <run>`) so the user can try the change; never
@@ -172,6 +182,11 @@ menu, not auto-land.
   the command, the page looked at): [change-discipline.md](change-discipline.md#commits).
 - Merges of main read `Merge origin/main into <branch>`.
 - Agent commits end with the `Co-Authored-By:` trailer for the model.
+- Trailers are provenance, not authority. `Co-Authored-By:` and `Claude-Session:` come from the harness and name the
+  model family and the session. `Agent:`, `Machine:`, `Model:`, `Flow:` (from `just docs-trace trailers`, set only
+  when `HQ_HANDLE` is) say which worker, on which machine, under which flow version. `Request:` / `Item:` tie the commit
+  to its ask. The shared git author stays `land-batch`; none of these marks grants rights. `just docs-trace <sha>`
+  shows them with the ship row and gate log. Never put names, emails or secrets in a trailer: handles only.
 
 ## Housekeeping
 
@@ -193,9 +208,9 @@ A worker's "landed on main" can mean only the local `main` of the shared checkou
 (`git status -sb` shows `ahead 1, behind 1`: diverged). The supervisor does not take the word:
 
 1. `git fetch && git status -sb` and `git log origin/main` in the checkout: is the sha on `origin/main`?
-2. If diverged: rebase the landing onto `origin/main`, re-run the gate (the tree changed), push, then
-   `git pull --ff-only` in the main checkout so it matches (never rebase, reset or stash the main checkout; a refused
-   fast-forward is reported).
+2. If diverged: merge `origin/main` into the landing's work branch in its worktree (merge, as in the landing steps
+   above; never rebase, reset or stash the main checkout), re-run the gate once (the tree changed), push, then
+   `git pull --ff-only` in the main checkout so it matches (a refused fast-forward is reported).
 3. A worker that fixed a gate failure *after* its gate run says so: "gate not re-run after this fix". The supervisor
    then re-runs the gate before accepting; a hand-back without that sentence is read as "gate ran on this exact tree".
 
@@ -208,11 +223,39 @@ Record a pass per git *tree* (not commit) in the shared git dir
 produces an already-passed tree, or differs only in docs, needs no new gate.
 See [quality-gate.md](quality-gate.md).
 
-## Worktree location and cargo
+## Where worktrees live
 
-A worktree created inside another repo's tree (for example HQ's `.claude/worktrees/`) sits under that repo's cargo
-workspace discovery: `cargo` in a different Rust repo's worktree finds the wrong workspace root and fails. Create a
-worktree for repo X inside X (or beside it), never under a different Rust repo.
+**Rule.** A worktree of repo X lives inside X's own clone, in a hidden, gitignored folder: `.claude/worktrees/<name>`
+(what Claude Code creates and the only place `EnterWorktree` enters without a prompt) or `.worktrees/<name>` (made by
+hand or by a script). Never a sibling folder (`~/dev/x-wt/<name>`), never a visible `worktrees/`, never inside another
+repo's tree. A session starts in the main checkout (or with `claude --worktree <name>`) and works in a worktree below
+it; workers never edit the main checkout.
+
+| Concern | Inside the clone (hidden, ignored) | Sibling folder |
+| --- | --- | --- |
+| Claude Code reads and edits | under the start directory: no prompt | outside it: a `Read(//…/**)` prompt per folder, or `--add-dir` |
+| `EnterWorktree`, resume, the periodic sweep | built for `.claude/worktrees/` | approval prompt that no rule turns off |
+| Saved approvals, plugins, project skills | shared through the main checkout | shared too (same repository) |
+| `git status`, ripgrep, prek discovery | skipped: ignored and dot-prefixed | not seen at all |
+| HQ storage, cleanup, watch, keeper, guard | found by path (`/.claude/worktrees/`, `/.worktrees/`) | invisible: piles up |
+| Container or sandbox mount | one mount of the clone covers worktree and `.git` | two mounts at the same absolute paths |
+| Tools that ignore `.gitignore` (`grep -r`, `find`, `du`, an IDE index) | see every copy: exclude the folder | clean |
+
+- **Hidden and ignored, both.** A visible `worktrees/<name>` broke every commit in the main checkout: prek found the
+  worktree's own config as a nested project. prek skips dot-prefixed and ignored folders, but caches the discovery
+  (`--refresh`). The ignore pattern is `.claude/worktrees/` and `.worktrees/` in the tracked `.gitignore`, not
+  `.git/info/exclude` (per clone, so a new machine would lack it).
+- **Another machine.** Each machine has its own clone and its own worktrees below it; git links them by absolute path
+  (`git worktree repair` after a moved clone). Never on a network share or synced folder. The tmux launcher starts a
+  session in the main checkout of the repo `-C` names, also when `-C` is a worktree: pass `--worktree <name>` as a
+  Claude argument, or let the worker create its worktree.
+- **Cargo.** A worktree under another repo's tree sits in that repo's workspace discovery and `cargo` fails: X's
+  worktree goes inside X. Each linked worktree builds into its own `target/`
+  ([rust-build-times.md](https://github.com/evocaslab/hq/blob/main/practices/rust-build-times.md)), which storage and cleanup find only below the clone.
+- **Exceptions.** Script-owned temporary worktrees that the script removes itself (a landing or ship trial under
+  `$TMPDIR` or `~/.local/state/hq/ships/`), measurement copies in `~/.cache/hq-measure/` and the session scratchpad. A
+  sibling that cannot be avoided is added with `--add-dir` (file access; a settings `additionalDirectories` entry
+  loads no configuration from it) and gets a backlog item for its removal.
 
 ## A repo rule must not make every landing wait for the maintainer
 
@@ -255,3 +298,22 @@ rewritten on another). Waiting also lets branches drift apart.
   2026-11-07): <https://code.claude.com/docs/en/commands>.
 - "Three focused teammates often outperform five scattered ones", own files per teammate (read 2026-11-07):
   <https://code.claude.com/docs/en/agent-teams>
+- Where worktrees live (read 2026-11-15). Verified in the vendor docs: worktrees are created under
+  `.claude/worktrees/<name>/` with the tip to gitignore it; `EnterWorktree` outside that folder asks for approval that
+  a rule or "don't ask again" does not suppress; resume, the subagent sweep and saved approvals (kept in the main
+  checkout's `.claude/settings.local.json`, valid in every worktree) are described for that location; a background
+  session may edit "in a worktree made with `git worktree add` under the directory the session started in"; a
+  sibling path is shown only under "Manage worktrees manually": <https://code.claude.com/docs/en/worktrees>. Reads
+  need no approval "within the working directory and additional directories", a `cd` outside them saves a Read rule
+  for that path, `--add-dir` and `additionalDirectories` (the settings key grants file access only):
+  <https://code.claude.com/docs/en/permissions>.
+- git: the path of `git worktree add` is free (the manual's example is `../hotfix`), links are absolute unless
+  `worktree.useRelativePaths`, `repair` after a move, `lock` for a worktree on a share that is not always mounted;
+  the manual says nothing on nesting or ignoring: <https://git-scm.com/docs/git-worktree>.
+- prek workspace discovery skips dot-prefixed folders, respects `.gitignore` and `.prekignore`, and is cached
+  (`--refresh`) (search summary, the page itself did not load): <https://prek.j178.dev/workspace/>.
+- Observed in HQ: sibling `~/dev/hq-wt-*` folders that no cleanup or status check saw (2026-11-08), a visible
+  `worktrees/` that broke main-checkout commits (2026-11-11), and workers in `~/dev/hq-wt/<name>` on a second machine
+  (2026-11-15: a `Read(//…/hq-wt/<name>/**)` prompt per worker, and the tmux launcher started in the main checkout).
+  Our inference, not a vendor statement: the table's container, IDE and "piles up" rows, and that the launcher should
+  stay in the main checkout.

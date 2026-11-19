@@ -1,7 +1,7 @@
 ---
 summary: "Agent hooks (Claude Code first): events, handlers, exit codes and JSON, scopes, async, caps, which event for which job, rules, portability to other agent tools, and ideas not yet adopted"
 group: agents
-tags: [agents, hooks, claude-code, guards, enforcement, portability]
+tags: [agents, hooks, claude]
 applies-to: [all]
 reviewed: 2026-11-08
 status: draft
@@ -100,6 +100,16 @@ talk its way past. Use advice for taste and hooks for rules that must hold. This
    same release; otherwise the probe strands work.
 9. **Log and count.** One line per block or ask to a file, so a repeating prompt becomes a fix ([guards.md](guards.md)).
 10. **One registration.** Check `/hooks` or the merged settings for doubles after editing any scope.
+11. **An auto-allow hook fails closed and stays narrow.** A `PermissionRequest` hook that answers "allow" must treat a
+    crash, a timeout or any stderr from the guard it asks as "no answer"; allow only classes the guard proves, plus a
+    tiny read-only set. Review found the usual bypasses: a variable assigned twice (the guard reads the first value),
+    free git flags (`--output` writes, `--ext-diff` runs programs), `git -C` into another repo, and multi-letter
+    variables such as `PATH` or `IFS`. Restrict assignments to one letter, list git flags, and test each as a no-answer.
+12. **Read a subagent's role from its brief.** `SubagentStop` often reports only `agent_type: general-purpose`; the role
+    (worker, reviewer) is in the first message of the transcript.
+13. **A Stop hook that claims must not re-claim what the session released.** A session that releases an item on
+    purpose (it is not its task) is handed the same item at its next stop, until the continuation cap ends the loop.
+    Skip items released by the same session in this run.
 
 ## Portability
 

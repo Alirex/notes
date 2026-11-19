@@ -1,7 +1,7 @@
 ---
 summary: "uv workspace, pre-commit hooks, tool pins, dependency upgrades, technical debt"
 group: quality
-tags: [deps, hooks]
+tags: [dependencies, hooks]
 applies-to: [all]
 reviewed: 2026-11-01
 status: stable
@@ -53,10 +53,10 @@ pre-commit).
   a script under `scripts/` that lost its executable bit fails in a recipe, not
   in review.
 - A justfile formatter hook (`format-justfile`).
-- `pre-commit-update` keeps hook revs current. A gate that runs fixers itself
-  may skip it. Where it runs on commit it fails the commit whenever a newer rev exists (and rewrites
-  `.pre-commit-config.yaml`): land the bump as its own `chore:` commit first, never inside a feature commit, and never
-  skip the hook (seen in `evocaslab/ui`, 2026-11).
+- Hook revs are kept current by Dependabot's `pre-commit` ecosystem or a reviewed `chore:` commit, never by an
+  updater hook that rewrites `.pre-commit-config.yaml` inside the gate (it fails every commit once a newer rev
+  exists; seen in `evocaslab/ui`, 2026-11). `pre-commit-update` may run as a report only
+  ([supply-chain-security.md](supply-chain-security.md)).
 - `markdownlint` with structural rules only (`.markdownlint.yaml` turns off line
   length, inline HTML and the like), so existing docs pass.
 - Repo-specific checks are `local` hooks (`language: system`) running a script:

@@ -1,7 +1,7 @@
 ---
 summary: "needs.yaml: what a repo needs to run, develop, test, build in CI and release (tools, display, GPU, services, network), checked and rendered by one vendored script"
 group: quality
-tags: [setup, ci, gate, docs]
+tags: [tooling, ci, gate, docs]
 applies-to: [all]
 reviewed: 2026-11-08
 status: stable

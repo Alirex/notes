@@ -1,7 +1,7 @@
 ---
 summary: "Write the spec of an input format or feature before the code: status banner, principles, one sample, what the parser gets, a field table, open questions; the sample runs as a test"
 group: docs
-tags: [docs, process, testing, api]
+tags: [docs, workflow, testing, api]
 applies-to: [all]
 reviewed: 2026-11-04
 status: draft
