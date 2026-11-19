@@ -1,7 +1,7 @@
 ---
 summary: "Licensing a public repo with mixed content: MIT for code, CC BY 4.0 for texts, all rights reserved for personal material and brand; LICENSE files, NOTICE, README and footer wording"
 group: docs
-tags: [license, open-source, static-site]
+tags: [docs, static-site]
 applies-to: [all]
 reviewed: 2026-10-30
 status: stable

@@ -3,7 +3,7 @@ summary: "Laying out AGENTS.md / CLAUDE.md, subfolder rules and skills"
 group: agents
 tags: [agents, claude]
 applies-to: [all]
-reviewed: 2026-11-07
+reviewed: 2026-11-09
 status: stable
 ---
 
@@ -28,6 +28,7 @@ docs/agents/*.md     topic files: git/landing, quality gate, style, tooling, sub
 <app>/AGENTS.md      rules only for that subtree (backend, frontend)
 <app>/CLAUDE.md      @AGENTS.md
 .claude/skills/<name>/SKILL.md   step-by-step how-tos needed rarely
+.claude/rules/<topic>.md         Claude-only rules; with `paths:` they load when a matching file is touched
 ```
 
 - **Root AGENTS.md** holds what an agent must never get wrong: never work on
@@ -51,6 +52,16 @@ docs/agents/*.md     topic files: git/landing, quality gate, style, tooling, sub
 - **Subfolder files.** Claude Code loads a nested CLAUDE.md when it touches files
   in that folder. Other agents don't, so the root file says "working in `web/`?
   read `web/AGENTS.md` first".
+- **`.claude/rules/*.md` with `paths:` globs, or a nested AGENTS.md?** A rule file is plain Markdown; its only
+  recognised frontmatter field is `paths` (a glob list, relative to the folder that holds `.claude`). Without `paths` it
+  loads at launch like CLAUDE.md; with `paths` it loads when Claude reads, writes or edits a matching file, so a rule
+  about `web/**/*.vue` costs nothing in a backend session. Use it when the repo is worked on by Claude Code only and the
+  rule is about a file type or folder. Use a nested AGENTS.md when other agents (Junie, Codex, Cursor) work in the repo:
+  they read AGENTS.md and ignore `.claude/rules/`. Both stay short and point to the topic doc; the root file's "read
+  when" table keeps working for every agent. Two limits: a path-scoped rule is summarized away by a compaction and
+  reloads only when a matching file is touched again, so a rule that must always hold goes into the root file (or a
+  rule without `paths`); and a rule is context, not enforcement (use a hook or `permissions.deny`, see
+  [Which mechanism for which job](#which-mechanism-for-which-job)).
 - **Skills** for procedures: a skill's description loads always, its body only
   when triggered. Good candidates: the full land menu, DB migrations, dependency
   upgrades, mutation testing, release. Link each `SKILL.md` from AGENTS.md so
@@ -91,6 +102,11 @@ Name the tools where the task is named:
   with it; otherwise edit the file by the repo's backlog rules.
 - Measure: `jq -r .tool ~/.local/state/hq/mcp/calls.jsonl | sort | uniq -c`. An empty log after a week means the
   instruction is not read or the server is not worth keeping.
+- Make the server say how old its data is: every answer carries the commit and date of the pages it read, the server
+  binary's build time and the last pull of its checkout. A long-lived server that serves yesterday's pages or yesterday's
+  code looks identical to a current one; a timeout seen on 2026-11-19 came from a binary older than its fix (the
+  background rebuild never finished). Read pages per call (or by a stat stamp) instead of at start, and pull the
+  checkout of a shared server on a timer.
 
 ### Make the tools forgiving
 
@@ -158,6 +174,26 @@ A skill is a procedure an agent loads when the task matches. Rules (Claude Code 
 - Trim by evidence: a skill nobody invoked costs its description on every turn
   ([subagents-and-context.md](subagents-and-context.md#eager-overhead)).
 
+## Which mechanism for which job
+
+Prose is followed most of the time; a hook or a permission rule every time. Pick the mechanism by what the job needs
+(Claude Code facts read 2026-11-09, see Sources; the Claude Code docs target under 200 lines per CLAUDE.md file):
+
+| Mechanism | Use when | Never for |
+| --- | --- | --- |
+| Rule in AGENTS.md / CLAUDE.md | A must-follow fact every session needs: never work on `main`, the gate command, a link table | Procedures, long reference, anything that must never be broken |
+| `.claude/rules/*.md` (`paths:`) | Claude-only repo; a rule tied to a file type or folder | Multi-agent repos (Junie ignores it); a rule that must survive a compaction |
+| Skill (`.claude/skills/<name>/SKILL.md`; custom commands are merged into skills) | A procedure needed rarely: description always loaded, body on use; a side effect sets `disable-model-invocation` | Enforcement; a long body (cut at 5,000 tokens after a compaction) |
+| Subagent definition (`.claude/agents/<name>.md`) | A delegate with a fixed role, tool list and model that is briefed the same way again and again ([subagents-and-context.md](subagents-and-context.md#a-repeated-brief-becomes-a-definition)) | One-off briefs; work that needs the caller's whole context |
+| Hook (`.claude/settings.json`) | Something that must happen or be refused every time: guard a command, inject context after a compaction, record evidence ([guards.md](guards.md)) | Judgment calls; slow work in the blocking path |
+| `permissions.deny` / sandbox | A path or tool the agent must not touch ([agent-security.md](agent-security.md#permissions-and-sandbox-claude-code)) | Argument-level command filtering (patterns are fragile) |
+| MCP tool | Data or an action other sessions and devices need, with a typed schema | Something one `just` recipe already does locally ([cli-design.md](https://github.com/evocaslab/hq/blob/main/practices/cli-design.md)) |
+| `just` recipe / CLI | A repeated check or action with a one-line result ([prepared-commands.md](prepared-commands.md), [cli-design.md](https://github.com/evocaslab/hq/blob/main/practices/cli-design.md)) | Logic that only one session needs once |
+| Plugin | Shipping a bundle of skills, agents, hooks and MCP config to other repos or machines | A single repo's own rules |
+
+Start at the top and move down only when the row above cannot do the job; a rule that was broken twice moves from prose
+to a hook or a check.
+
 ## Bind pages by task kind
 
 A repo's binding line of a few pages out of 100+ applicable ones is too thin: sessions open only what the line names
@@ -193,7 +229,13 @@ across sessions. Conventions that keep it useful:
   **How to apply:** line (when and how it changes behavior). Feedback and
   project memories need both; they let a later agent judge edge cases.
 - Link related memories with `[[file-name]]`.
-- `MEMORY.md` is the index, one line per entry: `- [Title](https://github.com/evocaslab/hq/blob/main/practices/file.md) — hook`.
+- `MEMORY.md` is the index, one line per entry: `- [Title](https://github.com/evocaslab/hq/blob/main/practices/file.md) — hook`. Only its first 200 lines or 25 KB
+  (whichever comes first) load at the start of a session, so what lies beyond is invisible; Claude Code reminds the
+  writer to shorten the index when it nears a limit.
+- **Hygiene, monthly** (the "Memory hygiene" row in [docs/CHORES.md](https://github.com/evocaslab/hq/blob/main/docs/CHORES.md)): merge duplicate entries,
+  drop facts the repo or the world has outgrown, keep one line per entry with the detail in the topic file, and run
+  `scripts/docs/requests.py lint-memory` (flags task lines such as `TODO`, `next:` or an unchecked box: a task is a
+  backlog item, not a memory). The `consolidate-memory` skill does the reflective pass: merge, fix, prune the index.
 - Repo rules belong in the repo's AGENTS.md, not in memory; memory holds what
   the repo cannot (the user's preferences, context, decisions in progress).
 
@@ -216,6 +258,18 @@ Example: a dotfiles repo with a `claude/memory/<project>/` folder per project.
 
 ## Sources
 
+- `.claude/rules/` and the `paths` field (the only field read), path-scoped rules load on matching reads and are
+  summarized away by a compaction, imports do not reduce context cost, target under 200 lines per CLAUDE.md,
+  `MEMORY.md` first 200 lines or 25 KB, AGENTS.md read directly only when no CLAUDE.md exists (read 2026-11-09):
+  <https://code.claude.com/docs/en/memory>
+- What survives a compaction (root CLAUDE.md and unscoped rules re-injected; `paths:` rules and nested CLAUDE.md
+  reload on demand; skill bodies capped) (read 2026-11-09): <https://code.claude.com/docs/en/context-window>
+- Custom commands merged into skills, 500-line `SKILL.md`, 1,536-character description cut (read 2026-11-09):
+  <https://code.claude.com/docs/en/skills>
+- Hooks, `permissions.deny` and the sandbox as the enforcing layers, not prose (read 2026-11-09):
+  <https://code.claude.com/docs/en/hooks>, <https://code.claude.com/docs/en/permissions>
+- Observed in HQ: the mechanism table's "never for" column (a hook-guarded flow, `just` recipes as the prepared
+  commands); no external source.
 - Claude Code reads CLAUDE.md, falls back to AGENTS.md only when no CLAUDE.md exists, expands `@path` imports,
   loads nested files on demand, and keeps auto memory in `~/.claude/projects/<project>/memory/` with a `MEMORY.md`
   index: <https://code.claude.com/docs/en/memory>

@@ -3,7 +3,7 @@ summary: "Delegating to subagents (Claude tiers, Junie) and keeping context lean
 group: agents
 tags: [agents, context, cost]
 applies-to: [all]
-reviewed: 2026-11-07
+reviewed: 2026-11-09
 status: stable
 ---
 
@@ -19,6 +19,16 @@ Start subagents without asking when it clearly helps:
 
 Keep task decomposition, cross-cutting changes, subtle logic and final
 verification in the primary agent. Do small tasks directly.
+
+### Delegate by default
+
+Standing rule (R-2611191636-86da): a task that is wide reading, a search, a design pass, or implementation in files
+other than the supervisor's current ones goes to the cheapest fitting tier (Junie or Haiku for reading and searches,
+Sonnet for implementation, Opus only for judgment) in the same turn it is recognised, not after the supervisor has
+read it all itself. The supervisor reviews the result and lands. Say which tier ran when reporting.
+
+Stays with the supervisor: task decomposition, a change to the file it is editing right now, cross-cutting or subtle
+logic, verification of a child's claims, and landing. A one-command lookup is not worth a subagent.
 
 ## Pick the cheapest tier that works
 
@@ -52,6 +62,11 @@ in the report that a result came from it:
   each finding against the code; two models agreeing is a signal, one alone a hint);
 - OCR of table screenshots, messy text into JSON or a table (validate with a schema), summaries and triage of logs and
   gate output (`qwen3.5:9b`).
+
+In HQ the idle GPU also keeps a code map of every managed clone (the `code-map` filler): one paragraph per source file,
+one page per folder. Haiku and Explore subagents run `just llm-digest map-show <repo> [folder]` first to pick the files
+worth opening, then read those files; the summaries are hints that can be stale until the file's next refresh, never a
+spec. `just machine-queue report` shows how many map pages were opened.
 
 Never for design, cross-cutting changes or subtle logic. It shares the GPU and some CPU with the checks: look at
 `just llm-status` first, skip it while a gate runs, cap the reply length, and skip it when Ollama is down.
@@ -101,7 +116,8 @@ Completion contract, for every delegate:
 
 Machine-checkable hand-back (for agents that implement or land work; lessons of two stalled days in one repo):
 
-- run the gate in the foreground, or wait for it in the foreground; no background task left at hand-back;
+- run the gate detached (`hq q-gate-bg`), wait for it with `hq q-gate-result --wait`, and hand back after PASS; no
+  background task left at hand-back;
 - edit with the editor tools, not `sed -i` or `perl -pi` on tracked files;
 - end the final report with a block the delegator can check by machine: branch, final commit, gate result, whether it
   landed, and where each lesson was saved (a practices commit or an HQ backlog item with `area: practices`; a note in a
@@ -125,7 +141,7 @@ the DOM, switch the region or tier selector, read again) and keep the judging. R
 number.
 
 Review briefs name the lenses to apply ([review-lenses.md](review-lenses.md)); a planned task is handed over as a
-backlog item the worker reads, not as a long prompt ([review-lenses.md](review-lenses.md#backlog-item-as-handoff)).
+backlog item the worker reads, not as a long prompt ([review-lenses.md](review-lenses.md#backlog-item-as-brief)).
 
 ### Sharpen the brief
 
@@ -140,17 +156,14 @@ result: the tool is what a reviewer can rerun.
 A builder reports what it ran, not what the gate runs. Before merging its branch (seen in four builder rounds on a
 Vue and Rust repo):
 
-- Read `git diff --stat origin/main` for files that do not belong: a builder given a worktree with a `node_modules`
-  symlink committed the symlink, and the merge replaced the main checkout's real `node_modules` with a link to
-  itself. Tell the builder not to `git add -A`, and keep `node_modules` in `.gitignore` as a path rule that also
-  matches a symlink (`node_modules`, not `node_modules/`).
+- Read `git diff --stat origin/main` for files that do not belong (a committed `node_modules` symlink is the usual
+  one: [the rule and the repair](git-worktrees-and-autoland.md#a-shared-install-symlink-stays-untracked)).
+  Tell the builder to stage files by name, not `git add -A`.
 - Run the whole project's type check, not the touched folders: a builder's "clean" `vue-tsc` on its folders missed two
   `exactOptionalPropertyTypes` errors that the gate found.
 - Take the hand-back's "Checked in: tests only" at its word and look at the real screen yourself (phone width,
   existing data for a schema upgrade) before reporting the item done; list what stayed unchecked (two devices,
   drag and drop, a canvas that tests mock).
-- A worktree with an untracked `node_modules` symlink makes a "worktree is clean" check refuse: remove the link
-  before the finish command.
 
 ## Naming sessions
 
@@ -236,17 +249,101 @@ breadth-first research; the same post names shared context, many dependencies an
 ## Context management
 
 Every turn re-sends the whole context: a long one costs more and dilutes
-attention; compacting too often loses details.
+attention; compacting too often loses details. Claude Code compacts on its own near the limit; the levers are yours
+before it does (read 2026-11-09, see Sources).
 
-- Auto-compact around 100-130k tokens on a 200k window; cap around 150-200k
-  even on 1M-context models. In Claude Code, `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`
-  sets the threshold as a percentage of the window.
-- Start fresh between unrelated tasks.
-- Compact at natural breakpoints with a focus ("keep the plan, open issues,
-  changed files").
-- Keep bulky output out: delegate wide reading, trim command output, read file
-  ranges.
+- Look first: `/context` shows the live breakdown by category with suggestions, `/memory` opens the loaded files.
+- Start fresh between unrelated tasks (`/clear`): old conversation crowds out the files needed next and costs tokens on
+  every message.
+- Compact at a natural breakpoint with a focus, `/compact focus on the auth bug fix`: the summary keeps what you name
+  instead of what the automatic pass guesses. `/rewind` then "Summarize from here" compacts only part of the chat.
+  `/autocompact <tokens>` sets how full the window gets before the automatic pass; the default thresholds per model
+  are on the model-config page, not fixed numbers to copy here.
+- What a compaction keeps: the system prompt, the project-root CLAUDE.md and unscoped rules (re-read from disk), auto
+  memory, skill descriptions, plan-mode plan, up to five recently read files (a file over 5,000 tokens comes back as a
+  path only), and the output of `SessionStart` hooks matching `compact`. What it summarizes away: the chat, context a
+  hook added earlier, and path-scoped rules and nested CLAUDE.md files (they reload only when a matching file is
+  touched again). Invoked skill bodies are re-attached, 5,000 tokens each and 25,000 in all, oldest dropped first and
+  the start of a file kept, so the key instruction goes first in a `SKILL.md`.
+  A rule that must hold after a compaction therefore lives in the root file, or is re-injected by a `SessionStart`
+  hook (HQ's `preflight.sh digest` does this on `compact`).
+- A 1M-token window (offered for several current models; availability is on the model-config page) lets a session run longer; it
+  compacts the same way and every turn still re-sends the whole context, so the cost grows with it. A bigger window is
+  not a reason to skip the levers above.
+- Keep bulky output out: delegate wide reading to a subagent (its reads stay in its own window; a 1-2k summary comes
+  back), trim command output, read file ranges.
 - Keep long-task state in files (backlog, changelog), not only in chat.
+
+## A repeated brief becomes a definition
+
+When the same inline brief (role, tool limits, output shape) is pasted into several Agent calls, move it into
+`.claude/agents/<name>.md`: a Markdown file whose body is the system prompt. Identity comes from `name`, not the file
+name; project definitions (`.claude/agents/`, committed) beat user ones (`~/.claude/agents/`) of the same name.
+Fields (all camelCase; unknown ones are ignored):
+
+| Field | Meaning |
+| --- | --- |
+| `name`, `description` | Required. The description tells the caller when to delegate; keep it short, it is in context every turn |
+| `tools`, `disallowedTools` | Allowlist and denylist (the denylist applies first); omitted `tools` inherits everything |
+| `model` | `haiku`, `sonnet`, `opus`, `fable`, a full id or `inherit`; the per-call `model` of the Agent tool wins over it |
+| `permissionMode` | `default`, `acceptEdits`, `auto`, `dontAsk`, `bypassPermissions`, `plan`; the caller's mode can override it |
+| `maxTurns` | Stops the agent after N turns; the output is marked partial and can be resumed |
+| `isolation` | `worktree`: a temporary worktree cut from the default branch, removed when nothing changed |
+| `memory` | `user`, `project` or `local`: a persistent `MEMORY.md` (first 200 lines or 25 KB loaded) and read/write tools |
+| `skills`, `mcpServers`, `hooks`, `effort`, `background`, `omitClaudeMd` | Preloaded skills, own MCP servers and hooks, effort level, always background, skip CLAUDE.md |
+
+Convert a brief when it was used three times, has a stable tool list and a fixed return shape. Keep a one-off brief
+inline. A definition fixes the role, not the task: the task still goes in the call. A read-only fact-gatherer, as in
+HQ's `.claude/agents/researcher.md`:
+
+```markdown
+---
+name: researcher
+description: Read-only fact-gathering over the repo: where or how X is used, what a file says. Returns facts with file:line references, never judges or edits.
+tools: Read, Grep, Glob
+disallowedTools: Write, Edit
+model: haiku
+permissionMode: plan
+maxTurns: 25
+---
+
+You gather facts for a caller that keeps the judging. Do not modify files. Search first, read only the ranges you
+need. Return at most 30 lines, each fact with `path:line`; mark what you could not find or read; end with what you
+searched.
+```
+
+Observed in HQ: the built-in `Explore` type already covers broad read-only searches; the definition adds HQ's return
+shape (file:line, "not read" marks) and a cheap fixed model. A definition is not enforcement of the caller's checks:
+verify its output as for any subagent, and the `SubagentStop` evidence hook in `.claude/settings.json` matches only
+`general-purpose|worker|reviewer`.
+
+## A counselor before a stop
+
+A session that ends its turn with work left, or commits to a hard choice, asks a stronger model that has no stake in the
+session's own story: HQ's read-only `counselor` agent (`.claude/agents/counselor.md`, model Opus).
+
+- **Enforced, not remembered**: measured 2026-11-19, a counselor and a reviewer agent existed and were called 0 times
+  in the HQ transcripts (designer 15, researcher 21, general-purpose 135): a rule the model must remember is followed
+  about 0 %, a hook-enforced one 97-100 % (`just cc-adherence`). So the Stop hook, on the last block of a pull-loop
+  session with a pickable item, refuses the turn end until the transcript shows a consult since the last maintainer
+  message (`Agent` with `subagent_type` counselor, or `cc-counsel ask|log`), once; a wait on own work, no pickable item
+  and a closing session keep their behaviour.
+- **When**: before writing `stopped` or ending a turn while `backlog_next` still has an item; a design choice in a brief
+  of size l; before a landing that carries a `Gate-change:`.
+- **How**: `just cc-counsel ask --cwd .` builds the brief (transcript tail, top pickable item, branch state, under 4 KB),
+  runs the counselor headless (`claude -p --agent counselor`, `--max-budget-usd 1`, 300 s timeout, model from the agent
+  file), prints the answer's first line (`CONTINUE: <step>`, `STOP-OK: <reason>` or `ASK: <question>`) and logs the
+  verdict itself. If the headless call gives no verdict (offline, no auth, timeout) it prints the brief and the Agent
+  fallback: `Agent subagent_type counselor` with that brief, then `just cc-counsel log --verdict <v> --session <id>
+  --item <id> --cost-note <T>`. Optional `--lens reliability|simplicity`.
+- **Lenses**: at most two, named in the brief (`reliability`, `simplicity`); never a third.
+- **Cost**: one Opus read of 4 KB plus a few tool calls per consult; write the plan percent in `--cost-note` (`cc-cost`).
+- **Trial** ([B-261119-advisor-for-supervisor-and-workers](https://github.com/evocaslab/hq/blob/main/docs/backlog/B-261119-advisor-for-supervisor-and-workers.md)):
+  the first 10 stops with work left must consult (the hook makes it so); `just cc-counsel stats` shows the verdicts,
+  consults per day and how many `stop-ok` still had a pickable item.
+  Decision rule: adopt as a hook when `CONTINUE` fires on the stops where work was left and the cost per consult is small
+  against a session's day; adopt for fleet supervisors only when it helps there and not on workers; drop with the numbers
+  when `stop-ok` mostly agrees with the plain stop.
 
 ## Eager overhead
 
@@ -264,15 +361,24 @@ A supervisor re-reads these rules and checks the plan pace before each start; a 
 
 ## Sources
 
+- Advisor tool (beta, API): a faster executor model consults a stronger advisor mid-run; read 2026-11-19:
+  <https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool>. Claude Code cannot call this API tool,
+  so HQ uses a subagent at fixed moments (the counselor).
 - pstack (MIT, Lauren Tan): <https://github.com/cursor/plugins/tree/main/pstack> (`sharpen, principle-build-the-lever`)
 - Subagents run in their own context window and return a summary; a model per subagent (`haiku`, `sonnet`, `opus`);
   `isolation: worktree`: <https://code.claude.com/docs/en/sub-agents>
 - Sending the whole context every request, clearing between tasks, compaction focus, `model: haiku` for simple
   subagents, delegating verbose work: <https://code.claude.com/docs/en/costs>
-- `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` (percent of the window; can only lower the threshold):
-  <https://code.claude.com/docs/en/env-vars>
+- `/context`, `/compact <focus>`, `/rewind`, `/autocompact`, what survives a compaction, skill-body budgets, 1M windows
+  (read 2026-11-09): <https://code.claude.com/docs/en/context-window>
+- Subagent file format: fields `name`, `description`, `tools`, `disallowedTools`, `model`, `permissionMode`, `maxTurns`,
+  `isolation`, `memory` and the rest, locations and priority, a read-only example (read 2026-11-09):
+  <https://code.claude.com/docs/en/sub-agents>
+- Skill bodies after a compaction (5,000 and 25,000 tokens) (read 2026-11-09): <https://code.claude.com/docs/en/skills>
+- The earlier "100-130k auto-compact" lines and `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` were dropped 2026-11-09: the context
+  page now documents `/autocompact` and per-model defaults instead; no current source for fixed numbers.
 - Junie CLI `--model`, `--effort`, `--review` (headless): <https://junie.jetbrains.com/docs/junie-cli.html>; the `--effort` needs `--model` rule, the `.junie/skills/` leftover and the per-job costs are observed in HQ (2026-11-04), not in that page
-- Observed in HQ's own use (2026-10; Junie credit costs, tier order, compaction thresholds of 100-130k tokens);
+- Observed in HQ's own use (2026-10; Junie credit costs, tier order);
   the `junie` flags `--output-format json`, `--project`, `--session-id` were not found in the pages read.
 - Context as a finite attention budget; just-in-time retrieval, compaction, notes outside the window, subagents that
   use tens of thousands of tokens and return 1-2k (read 2026-11-07): <https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents>

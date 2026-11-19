@@ -1,7 +1,7 @@
 ---
 summary: "How information and decisions move in a fleet of agent sessions: a pulled, capped brief of tool facts, an explicit delegation level with one bright line, purpose before tasks, outcome next to tempo, lateral knowledge as dated lines"
 group: agents
-tags: [agents, supervision, fleet, workflow, security]
+tags: [agents, supervision, workflow, security]
 applies-to: [all]
 reviewed: 2026-11-08
 status: draft

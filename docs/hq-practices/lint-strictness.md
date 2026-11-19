@@ -1,7 +1,7 @@
 ---
 summary: "Strictest linters and type checkers; fix findings, never silence them"
 group: quality
-tags: [lint, types]
+tags: [lint]
 applies-to: [all]
 reviewed: 2026-11-06
 status: stable

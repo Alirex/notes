@@ -1,9 +1,9 @@
 ---
 summary: "Secret scanning, dependency audit and cooldown, Actions hardening, repo settings"
 group: security
-tags: [security, deps, ci]
+tags: [security, dependencies, ci]
 applies-to: [all]
-reviewed: 2026-10-30
+reviewed: 2026-11-18
 status: stable
 check: "script: sec-check"
 ---
@@ -23,6 +23,7 @@ Status checked 2026-10; tool versions move, `pre-commit-update` / `just repos-se
 3. **Lockfiles are committed and enforced**: `uv sync --locked/--frozen`, `pnpm install --frozen-lockfile`,
    `cargo ... --locked`. CI never resolves.
 4. **New releases wait.** Every dependency update path has a minimum release age (a cooldown) of about 7 days.
+   The one exception is a trusted package (see "Trusted publishers").
 5. **Workflows are least-privilege and pinned**: `permissions:` set per workflow, actions pinned by full commit SHA,
    zizmor in the gate.
 6. **Turn on what GitHub offers for the repo's plan** and record what is not available.
@@ -108,8 +109,12 @@ Most malicious releases are found within days. Do not install what is younger th
   `exclude-newer-package = { pkg = "..." }`.
 - **pnpm**: `minimumReleaseAge: 10080` (minutes) in `pnpm-workspace.yaml`, with `minimumReleaseAgeExclude` for an
   urgent fix. Set it explicitly even where a newer pnpm defaults it.
-- **Cargo**: no native setting; Dependabot/Renovate cooldown on the `cargo` ecosystem, and `cargo update` only
-  in the reviewed monthly commit ([rust-service-tooling.md](https://github.com/evocaslab/hq/blob/main/practices/rust-service-tooling.md#dependencies)).
+- **Cargo** (1.100 and later): `[registry] global-min-publish-age = "7 days"` in `.cargo/config.toml`. Cargo skips
+  versions published more recently and says what it held back. One urgent fix, after reading the advisory:
+  `CARGO_RESOLVER_INCOMPATIBLE_PUBLISH_AGE=allow cargo update -p <crate>`. Limits: an index entry without `pubtime` is
+  never held back, and `cargo install` ignores the setting, so install tools by a pinned version you reviewed. Keep the
+  Dependabot/Renovate cooldown equal to it, and run `cargo update` only in the reviewed monthly commit
+  ([rust-service-tooling.md](https://github.com/evocaslab/hq/blob/main/practices/rust-service-tooling.md#dependencies)).
 - **Bots**: Dependabot `cooldown: {default-days: 7}` per ecosystem (covers `github-actions`, `pre-commit`, `uv`,
   `npm`, `cargo`, `docker`); security updates bypass it by design. Renovate: `minimumReleaseAge: "7 days"`.
   Keep the bot's value equal to the package manager's, or the bot opens PRs the lock step cannot resolve.
@@ -117,6 +122,26 @@ Most malicious releases are found within days. Do not install what is younger th
 - Hook revisions follow the same rule: no auto-updater hook (such as `pre-commit-update` run as a hook) that moves
   revs inside the gate. Revs change only through Dependabot's `pre-commit` ecosystem or a reviewed commit, under the
   cooldown; an updater may run as a report, never as a fixer.
+
+### Trusted publishers (own packages skip the cooldown)
+
+The cooldown protects against a stranger's bad release. A package the maintainer publishes from their own account or
+organization has no stranger in the path, so waiting a week only delays the maintainer's own fix.
+
+- **Trusted** means all of: the package is published from a GitHub owner listed in `registry/shared/policy/trusted.yaml`
+  (the maintainer's own accounts and organizations), from a repo the maintainer controls, with 2FA on the owner and,
+  where the registry supports it, trusted publishing (OIDC) or a pinned git tag. A name that merely looks like one of
+  ours is not trusted: match the registry owner and the repo URL, never the package name alone.
+- **What changes:** a trusted package is excluded from the cooldown in each manager
+  (`exclude-newer-package`, `minimumReleaseAgeExclude`, a Cargo git or path dependency that the registry setting
+  never held back, a Dependabot `exclude-patterns` entry or a Renovate rule with no `minimumReleaseAge`).
+  Everything else keeps the cooldown, and the lock, audit and pin rules stay on for trusted packages too.
+- **Not trusted:** a package from a company or client organization the maintainer works in but does not own, and any
+  fork or mirror; they follow the cooldown like a third party.
+- **Where it is written:** the owner list lives once in HQ (the policy folder keeps it out of the registry loaders that read `registry/shared/*.yaml`); a repo lists the
+  trusted package names it uses beside its cooldown setting, with a comment that links here, so a reviewer sees each
+  exception.
+- A trusted package is still a dependency: its release goes through the repo's gate before landing.
 
 ## GitHub Actions
 
@@ -152,6 +177,27 @@ Per repo, as far as the plan allows:
 - Actions: default token read-only, `sha_pinning_required`, fork PR workflows need approval.
 - A settings change is the maintainer's: report it as a `manual-action` ([maintainer-questions.md](maintainer-questions.md)).
 
+## Adopting a third-party tool or skill
+
+Cooldown and pins cover a dependency's releases; they say nothing about what the tool does the day you install it.
+Before a new tool, server, plugin or agent skill goes into a recipe, read its code (not only its README) for:
+
+1. **Bind address.** A server that listens on every interface by default is a finding; bind to `127.0.0.1` in the recipe.
+2. **Routes that run code without auth** (an `evaluate`, `exec` or `eval` endpoint, a shell or file route).
+3. **Telemetry.** Is it on by default? Does the code match the docs (a comment or README saying "opt-in" over code that
+   sends by default)? Set the documented opt-out (`DO_NOT_TRACK=1` and the tool's own variable) in the recipe.
+4. **Downloads at install or first run** (`postinstall`, a binary or model fetched from a URL) with no checksum or
+   pinned digest.
+5. **Security policy and open security issues**: is there a `SECURITY.md`, and how old are the open reports (XSS, RCE)?
+6. **Licence of every bundled model or asset**, not only of the code.
+7. **Pin the version** (never bare `npx pkg`; an exact version or digest) and record the checks in the item or commit.
+
+Worked examples (research of 2026-11-13, from the code): `heygen-com/hyperframes` (telemetry on by default, skills that
+call a beacon first, unpinned `npx`), `jo-inc/camofox-browser` (all interfaces, an unauthenticated page-JS route,
+telemetry on despite an "opt-in" comment, a `postinstall` zip with no sha256), `Anil-matcha/Open-Generative-AI` (binary
+and weights with no checksum, open XSS issues, no licence field on models). A tool failing item 1 or 2 is declined
+unless a wrapper fixes it; the rest are fixed in the recipe or recorded as accepted.
+
 ## Why
 
 - A leaked key in git history is valid until rotated, and history is copied (clones, forks, agent transcripts);
@@ -178,4 +224,6 @@ Per repo, as far as the plan allows:
 - SHA pinning policy: <https://github.blog/changelog/2025-08-15-github-actions-policy-now-supports-blocking-and-sha-pinning-actions/>
 - Observed 2026-10-25 with `gh api` on HQ's registry repos (private repos on a free plan: rulesets and branch
   protection answer 403 "Upgrade to GitHub Pro"; secret scanning fields absent).
+- Intake checklist: observed 2026-11-13 by reading the code of github.com/heygen-com/hyperframes,
+  github.com/jo-inc/camofox-browser and github.com/Anil-matcha/Open-Generative-AI (not re-verified since).
 - Observed in a Fable review of a managed app (2026-11-01); no external source beyond those linked above.

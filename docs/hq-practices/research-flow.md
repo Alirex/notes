@@ -1,7 +1,7 @@
 ---
 summary: "How agents research a question: brief, source tiers, evidence labels, second reader, model per stage, stop rule, note in the repo, not-taken register"
 group: agents
-tags: [research, docs, subagents, evidence, decisions]
+tags: [research, docs, subagents]
 applies-to: [all]
 reviewed: 2026-11-04
 status: draft

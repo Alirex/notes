@@ -1,7 +1,7 @@
 ---
 summary: "One wrapper over existing security scanners for every repo: pinned tools, not-checked is never ok, expiring allowlist, findings as backlog items"
 group: security
-tags: [security, deps, ci, tooling]
+tags: [security, dependencies, ci, tooling]
 applies-to: [all]
 reviewed: 2026-11-04
 status: draft
@@ -84,6 +84,20 @@ agent-config scanners (a few own rules from [agent-security.md](agent-security.m
 - A permanent ignore is a finding nobody reads again. An expiry of at most 90 days turns "accepted risk" into a
   question that comes back.
 - One ticket per repo keeps the backlog readable; a ticket per finding buries the one that matters (a leaked secret).
+
+## Related products and prior art
+
+Commercial platforms of one vendor (CQR) that the maintainer has worked with; closed source, so a source of ideas
+(typed targets, finding statuses, new-against-known diffs, exploit-aware priority), not of tools to pin. Research,
+comparison and the "modular scanner" options:
+[docs/research/security-scanners-scangit-insom-cryeye-2026-11.md](https://github.com/evocaslab/hq/blob/main/docs/research/security-scanners-scangit-insom-cryeye-2026-11.md).
+
+- Scan Git, free hosted SAST, SCA and secret scan of public repos: <https://scangit.org>
+- Insomnia, AI pentest suite and the `sast` CLI: <http://insom.ai>
+- CryEye, product site (audit orchestration SaaS, module list): <https://cryeye.net/>
+- CryEye, product site with monthly plans and the tool list: <https://cryeye.io/>
+- CQR's "Infrastructure protection by CryEye" service: <https://cqr.company/service/infrastructure-protection-by-cryeye-2/>
+- CryEye demo presentation (PDF, 84 slides, 2024): <https://cryeye.io/wp-content/uploads/2024/10/Cryeye_presentation_for_Demo_2024_09_27_export.pdf>
 
 ## Sources
 

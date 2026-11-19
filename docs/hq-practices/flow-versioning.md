@@ -1,7 +1,7 @@
 ---
 summary: "Version the agent flow (briefs, hand-back block, retire checks, round): a semver file with a changelog, a per-session registry of role and version told vs seen, stale detection that briefs only the sessions behind"
 group: agents
-tags: [agents, supervision, workflow, versioning]
+tags: [agents, supervision, workflow, release]
 applies-to: [all]
 reviewed: 2026-11-08
 status: draft
@@ -75,6 +75,14 @@ Each record (`schema: 1`, every field has a default, readers ignore unknown fiel
 | `cwd`, `branch`, `pid`, `tmux` | where it works, when known |
 | `started`, `last_seen` | first record; last confirmation |
 | `flow_told`, `flow_told_at`, `flow_seen`, `flow_seen_at` | the two facts above |
+
+**Identity card.** Every record also has an `agent_id` (a uuid7, minted once at the first read or write after the record
+exists, then stable; old registry files are migrated that way, nothing else changes). The card shown by
+`just cc-flow card <name>`, the `status` listing and the fleet round is `agent_id` (shown as its last 8 characters, as a
+uuid7 head is a clock), `name` (the handle), `icon` (an emoji from the role), `color` (a palette hex chosen by a hash of
+the id) and `tags` (repo, role, model class), next to the role, model, flow and surface fields; only the id is stored,
+the rest is computed. A run (`Run: <uuid7>`) belongs to one agent, an agent has many runs. Field meanings follow
+[entity-fields.md](https://github.com/evocaslab/hq/blob/main/practices/entity-fields.md) (name, icon, color, tags).
 
 Briefs carry `Role: <role>` next to `Flow: vX.Y.Z`, so the hook registers the role with the version; the hooks also
 fill surface (a tmux environment, a desktop environment, a start from the desktop app), machine, cwd and branch. The

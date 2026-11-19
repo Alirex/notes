@@ -1,7 +1,7 @@
 ---
 summary: "Working through one change: end state, data shape first, units that end green, when to stop"
 group: agents
-tags: [agents, process]
+tags: [agents, workflow]
 applies-to: [all]
 reviewed: 2026-11-04
 status: stable

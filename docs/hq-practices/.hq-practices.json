@@ -1,203 +1,311 @@
 {
   "source": "evocaslab/hq",
-  "commit": "f90fb803e3ce033f7047c9bf3cec609af1622b5f",
+  "commit": "a08c183d680edfc4cb5ae6f68de0d69cce3ea034",
   "audience": "Alirex/notes",
   "pages": {
+    "agent-access-to-apps.md": {
+      "source": "e7b1fcfa01385f5c86784b26548f34676ea582287435a9c45264387c5cffcd20",
+      "file": "e8a3045ac6134a2348fe819c3a9cb74f90170bf4823800eed87e7289ec5ab1ac"
+    },
     "agent-harness-evals.md": {
-      "source": "5f5872086b20167e639a717a4ed64dcedbce08da69a8aa675718bc5ecab9b468",
-      "file": "a3faa5132481154fe6b5734c2f0830914427155050f6eac2878ab49b145a3c68"
+      "source": "ab0970c25d63df236cb93bb4f75831bd775edcad9b8308198666a39a42acd8fa",
+      "file": "77da44998d2d58c6e2db9e58b7957288412514af5c9e85a2fbeef3e506ad3434"
     },
     "agent-instructions.md": {
-      "source": "95e9740fde964d27542be82845ba75ed33d1fa6d40f85c3ac8cd4f810385edc3",
-      "file": "23cd03743782bd1da74e9f300317fd6d6a89021c3c026f6a97cbc1b7e1e87fa9"
+      "source": "5498657b4d6c202305744e411f0a9c6e7b5f0f120fbdc8a9da876cf4ecbf2375",
+      "file": "00f3b0520b0744c6a847e7079b7461ddf832f79f7149de401c8f81447b85cb82"
+    },
+    "agent-landing.md": {
+      "source": "a0d7107105e5c2ff81f9e47c2088052e910577263fe6f810146e7dd01439720a",
+      "file": "de2f4203d3e25cbbc3dbdbcb48a8dd23316f0d8cd66062e5e67d48df4a88f001"
+    },
+    "agent-retire.md": {
+      "source": "5312bd7fd222185bf58d581102f261a9827c3aeab9085d97ba9e55a952bb0593",
+      "file": "173f86926cd55fdb01df91b22bed8749487a7b635bfb80cbcb90d7cf947b4b1a"
     },
     "agent-security.md": {
-      "source": "549665b9a098ecd33fbbddddce18dcefadd5f37da0a0c73fa980109cafb274e9",
-      "file": "a424dd9f451b576b15ab9894895423c333dd8efba0e5b8dfa8f47c3815fefde6"
+      "source": "9a584f71c13d595e4c7939e86b38c05ae6b841d4edef811820dd8bd9aabbfc5d",
+      "file": "518e30bafc7b3d19782ec4b99a9abea7f21af05c4779e704ed561a9d8f4228f9"
     },
     "agent-workflow.md": {
-      "source": "f7c022b7723520a92e3b5daea9a3b8b45acdb871203007e7799b0ef9d7ff8c2a",
-      "file": "d0d234c29afe06b1eec7d4a29d70c1cc7aaf7fc70073e0cc27a19d4890e04795"
+      "source": "0c5ad1a8b579df72368f1574e3c53c6fc7bfc33684babb1e7d77baa3de2762fe",
+      "file": "3c4464876c92b1c815d78c7df6fc8aac4e80050bedb0cba6f2a8f0e3990fab0c"
     },
     "agile-lessons.md": {
       "source": "311c2f2fe710df77a0a5452cff602fd5a1ebffdf10867722ed37ce2f2a2c6a15",
-      "file": "51aebfa37eeda99c9c4a16178e800fb79592ac2440ab96233f9152a0e4210de2"
+      "file": "34b73163ddc2e8448c1217437429f54d5e703e43a0c3b4508dae863cdd281592"
     },
     "architecture-diagrams.md": {
-      "source": "36771313031b616efa3c7afa20b22e151b73da655e93a4d1345e8b65a6514bad",
-      "file": "971c52708cd98b1a215a1ceb6f2ae12b55641a17fc56c97a2c0aeb171d65c732"
+      "source": "f369798e3ff161a180f4208b741c064eb89eb0fe95946eb386be61df3178b49a",
+      "file": "f6cdd12fe58b4c3c9cdc034ad77a4d8107ef673fb7647a79141e2bb4fcb0288d"
+    },
+    "architecture-map.md": {
+      "source": "12212b98b46f69f3b3907e1f4409d6362f1c0ec5a43755965036275de1e2c6bd",
+      "file": "b1557f29709e4efa2d1e0a67b81388a1f625db1bac180e3becc1e2cd321212f3"
     },
     "autonomous-sessions.md": {
-      "source": "9b4261feac119ca7362092c4f020d0f70fcf64b8a9d29e3d2964314c137363d1",
-      "file": "43d744e579d59a9eacfec10254841d80a8a97d2204f75ed5a52ba79158608b7e"
+      "source": "4fc0b04b5617979e9ceb2569e24a0249f8b53ed52f102333fdbbb1451c6840c7",
+      "file": "0cc13bd1f611b737335f5a9a44d3954a6b60cf54868e5e72b4868d3cbfabf3da"
     },
     "change-discipline.md": {
       "source": "254c91b755a24db4a13c8c074ae3ef0aaa60fd9bb9e30898a4b5c5c0711b3c1e",
-      "file": "7af9910243d898c18d24921ef457c417dfcfa54178c2e06892d9210d5d98e91c"
+      "file": "10a827cd7fd5c9288bbc9aa0465b65958c9e7cbc681376373ac227d127b4ac44"
     },
     "claude-hooks.md": {
-      "source": "0ff0b3aaf29fbd2b048d6303d57a2b95cc3b2e4ee47203db1f8e209f9ee7ca09",
-      "file": "635e4a5307edf6539de2579086211d3e0e6d747eb3e826a0e87bd59a70c6055e"
+      "source": "13fcba633527be1f70bba47e87191eb92222762bf193e9860cac9b997a3925af",
+      "file": "01a685aa7ea2d97a314a10e01e01dbd0341abd852c5b5f47879dfe3f6d4b966f"
+    },
+    "claude-sessions-in-containers.md": {
+      "source": "b10e8b9f0f9cb5a7bc32679920edc9d0dca09a4a2fc8bc868733a0a08ca7b18e",
+      "file": "c6cbecc19d5eb9702451e30cf94127e40f626268efaf2f71aa0d16143835574b"
     },
     "continuous-improvement.md": {
-      "source": "9eebe5a2d1077e4d29bd1659c1b2579e78e22883218db462794ee2da1fef346f",
-      "file": "a95bca39ada0a32593b8913d9a013be38265c94b71aecd33c34c9e7b2b1e7085"
+      "source": "cb9bc97fd281ca8c484f3431f5c08cb5dbae9d2bf8b540ada8bddb8e35c8b3f7",
+      "file": "8cae2fe38a4dadbc074b3a1e5b6f9ddd9b5c0be51b120656cfbac7f418435f27"
+    },
+    "continuous-work.md": {
+      "source": "c53df1406e1147ce72f0bf3b1e7d9fd709ed531998fcd60f22f868000037cb31",
+      "file": "a1c2883ea7a86119fb563ec08c46fb4865b1e19d09c26dc1e053090acfb41b59"
     },
     "diagrams-as-code.md": {
-      "source": "7b1f8d5325861bc4cd81ba63160e855a65b1975d331bf677152c7c84a62a0962",
-      "file": "906f97a0f390f9facdd2bfbdc40ac42d8a134ca15234b2f876ea336af7f33cd5"
+      "source": "3747a80d995f338f7f57d5ec9a0c3c66f670fe0c63f2c363598294525ba7c3b7",
+      "file": "ccabbcedbd554ad73114c198c505c2c112145b2f69c6eb7b8cb1e7576379b329"
     },
     "docs-backlog-changelog.md": {
-      "source": "1bb37af9941eb220f9e91e2ce5053af7c9e222d2eea7c70ed024e53656aa7ed3",
-      "file": "afb239e1d9bd05e5669284c430fabb1813326070bb2d6b194d9125078c332a9b"
+      "source": "5b893c5d50649a2d82f9c5b1b809e57dcaf4328be77a86cc54abcc496924f7a3",
+      "file": "4fb823755cdca5096bde464c4f2327f27283632ca5993ebfc701a7b7e844aabc"
     },
     "docs-match-code.md": {
-      "source": "e0bc18214ae05300185f7c164da145104a5b1c932dbb406ec265991fc0502db2",
-      "file": "d44912eaad2a0b1cefdf887aecd28e543df50ed2d87cdc4c7a9b825f0040c14c"
+      "source": "f450a373497a673f1a9c0b4764b9d46387f0b5ba0ba0ebeacb5e249ed3b9cb42",
+      "file": "0ea22acc2239fcc3b92d9a6a8856ef882b27193d372c485cb1979eecb9b5c0da"
+    },
+    "dry-and-design-principles.md": {
+      "source": "921e631d1b200126349f20648f8e7bd80e9c20763deaf0a284765e8b9a592b47",
+      "file": "03b411a9808d8146b3ef9d15768db3d13fd7a1ca1b187fbf4749e431599c1598"
+    },
+    "durable-knowledge.md": {
+      "source": "453432f47b5ea65e413c3f627811b3d6adb6ce188dd86c178f8b0c65a7222d8c",
+      "file": "42ac4f2b5f94fb2d69f30ab494a0886f2bc285233f62ca09a314c006547ff8c4"
+    },
+    "environments-and-trials.md": {
+      "source": "53590cd9b0b7d0a72ca8db528e070c7ee3a368f61d5f8944f03686cef25ca1cc",
+      "file": "dfcf8e45d0b1f739dbd6cb218161dd114310ef70aff192deb2a7ea30ea3821db"
     },
     "fleet-information-flow.md": {
       "source": "d56feeb78928211e61a93cff7fdd44c95435eaffcdfe5ca9311eb15c3df54175",
-      "file": "78fd3a50da28e8e956ffeeea06d23dd460ab77dab9062c1dfb4dd6812d0992d7"
+      "file": "82c1ba3d76a1cb8807e84ae0ce7dd49326f703625c4fe07794bb2325852abf3c"
     },
     "flow-versioning.md": {
-      "source": "541343b7f1e10db0ea46ff3c9c6f8e1e9fade3329874a30e63aa30ed81a15a5f",
-      "file": "67c3543f2c0f12a90aa043273c445b62dd4daa1c4455bb24844abe750f8fd0e0"
+      "source": "88c963bee0f2c74b4260744d74fa776b2af2b19c54f8627d66de561cfae2d8dc",
+      "file": "4bb0619cb62fdbfd44b8eaa9f424e12f83f673f79abb81faa4690ee658f0280f"
+    },
+    "gates-by-module-and-parallel-work.md": {
+      "source": "438d9d4269fec6fbce989caaeea1863705da00a1180f2f10e961fcdd1d1202d0",
+      "file": "9be94257bb8a91ff730f850f198b7ba1ca7771654ec84b0de12fc86bbade71aa"
+    },
+    "generated-files.md": {
+      "source": "5621e7ad2b990c7f1c749fb5952f4f32bda78fec639005ce96551bd300efa44d",
+      "file": "1b93586b5d6c3fa8f3be5328d769e80b4c8fb92eb956bdd7a491fa7a526e3e95"
     },
     "git-worktrees-and-autoland.md": {
-      "source": "97336795e8df85b66f7690879d2ec982c440a9fb827ce1c7012479c8d70aad07",
-      "file": "ccbc316008f40fca5b7a0f7c0fd2b2857e94e22500f1af90c69e860791dc0819"
+      "source": "c5b853cbc303e8d11609a97299b3dbba6225d8775317b0af35d080e1b4039e14",
+      "file": "8a453c401f5ce08ccb03bcc083ab297bbe2c1bdabeb3aac2fc2744ba48d13cf7"
     },
     "gitignore-and-ide.md": {
       "source": "b7e712744e8c98ac4077fb045f85484c6c84aa88209388df7678b8901d297735",
-      "file": "8439b117f953f5bb7f9109adb46d83e6e8e5ef4f304cc78f003fd416c7e272b2"
+      "file": "7c1020c35019285044161f38f60d0b0c8cdd9d4cafd6ca33d1a4bb1eccb05f25"
+    },
+    "glossary-and-vocabulary.md": {
+      "source": "87b0a4bdddbf29002c950d854c353ea4d886392076ec54200c75c58301646494",
+      "file": "748d956f93e588bb7c32bac923c50221cfaaf685c5c78888724388b2e6163a6a"
     },
     "guards.md": {
-      "source": "58472bb57640a6930ff3780aa4181b80f9b09e89051416ff1675ed9dd4561b0a",
-      "file": "07330875373df842fac7009d3e3d86b9c7c78b1729bde78efe950b2870c3f8a6"
+      "source": "145db7e1e6323614ea380fe87fceadc19e61bed940392182ea3a51bbbf9d1d8b",
+      "file": "767d01fb5673bec8b97b68bbac5c93e16e7252012a3211a0fd152d61e4195483"
     },
     "headless-and-ci-agents.md": {
       "source": "098622fc9c15fcc7821d0fc5fc71531bd969e641daa5a5fe80eb5396f69558f2",
-      "file": "c3ad36c8442dada4d44be867c928866089f95e4a129a39359173732ecfdd7698"
+      "file": "3e4312a02c5da211b5def561e63e1e252dec7afc95003596d379df13461eb1b9"
     },
     "heal-after-interruption.md": {
-      "source": "c9e1988493e6ebc00c09ccaa8d1f79ed9f9dd1f9154c84b24a9e0ec1d62059cd",
-      "file": "7b59d1033f839d10b5645c72133cdb3ef6663112027c4287541690a35b06f5a6"
+      "source": "4c2cca8287cbd916703b02d6fe8c0c40974d383200fc6e6d1073213439818bfa",
+      "file": "39c41d2c795b7b7b00bae52f014226172b59246f0b5d2da0f6e65055f1e38c8d"
     },
     "just-recipe-vocabulary.md": {
-      "source": "a6c206bf9dcd6676c853ebb330c61fac914471f9e87fd8022a1637675a6184fa",
-      "file": "d1a1f6d078c95bf44a2395f254e71d4a1f00e985b05e2d6a92d001474a076d96"
+      "source": "85898d225d1f89c631f3c83d1a14beda400a250e54c5ebf5379453b959d84f15",
+      "file": "ab1dedad03bc923f990049d1b6637310810feee6ebe81db27d2f5483560dfe4f"
     },
     "just-task-runner.md": {
-      "source": "0c027536202d713622dff210a56d67db09d5ccb62ae19644949699f0a9b8ef8a",
-      "file": "46d00ed0afaacfafaeba5110075ee48a8a1700dd29410f55cb6a77f74720b923"
+      "source": "8ac35cf4b3cfc5ede121060910c8bf6dd354920b2f15bc13e1c9a3c0e67148ec",
+      "file": "260e51897c501da624fe3bd3c73a1e16ddb5393cd7ec3762715fa39e27787e5b"
     },
     "language-choice.md": {
-      "source": "06b2a42a2a8b00ed60aa5e591cae06e19f606baf87da77efa0be97faeb66ced7",
-      "file": "95e3a97d8022baecf287f05b21a55ed6a78d5f6df5f5f28dd85f6e05dab9d0e5"
+      "source": "1d90e1a61527219545cf59925a342e6369d0d891fc8fdd7401e3c4e8b0613f0a",
+      "file": "10db9533182679af66975e15e0f3bd7b6f942108525676930becdf6cd89ccd71"
+    },
+    "launcher-preconditions.md": {
+      "source": "a8a6d684d7632b49f6a3ec8569c33a53bb646b5023f56f4eb287e06dcda22b33",
+      "file": "bbd8770b70ef0c4defe8dd8b6e7df96d8a44c8180f9aa724c349c0095f1012e1"
     },
     "licensing.md": {
       "source": "72e948d75025a5139647769c491fcb61560c25bbe90b643fabfc4e57b508f295",
-      "file": "c2dfe701e9291a21e31c43272f902562e4b29ea726f71edf73be69d86fd78fcf"
+      "file": "3b6e0fe534000a09d386996ba44e96af366450effa4f84d5c612273a9b1578ab"
     },
     "lint-strictness.md": {
       "source": "7b8d3cb8483c84082e8798d852e53ea2c2e87d3cd72bcfecac335d733e18ee04",
-      "file": "ca80832147dd540090a502ac2b774354317da62d32d8bec29bac251d0cef9f00"
+      "file": "b63889fdd3b38cb6b88d5076bb665dc460d2db333a918a93320c948c7ca29930"
     },
     "llm-usage-guards.md": {
       "source": "c057d375eb36d3b815ee925c80f1301db27e33fa5fe94d6d32a843419cabab1e",
       "file": "d3e2520e0f296ebe39b692e4e5fc8ff8e82bef5d4c871a9583ed46912066b851"
     },
     "maintainer-questions.md": {
-      "source": "663460fab4de12323b780c266d04b500597648e370362a87dadc3dc9b0858963",
-      "file": "766fa9b9048a6d6c5faf7a1b93f8d7b5b009a5102e1285df801cb907ae88cf93"
+      "source": "8de432cb85d60d0efe8df70cb5c87e69b65d8e3590c6fbc3ad6849df41c1f40a",
+      "file": "6b1ea2be443bea77b612984e32397c6cc936e5e00106153bf96401bcb245dd38"
+    },
+    "mcp-server-design.md": {
+      "source": "6f64a06421c70fddde4deadc74ccd6de82c035380b662cc462f6af357556fe7c",
+      "file": "175b3caa09129d0e9712e5d3e2fad8cba7eeac2473d1e029c6b918c6e710e528"
     },
     "measures-of-performance-and-effectiveness.md": {
       "source": "7fea03f9e26d3a752de48847b523c5cf69388d4c7ad42f19d5d5432a947807e6",
-      "file": "97488af4e454c02320abee8a18318ecbef567d19e727d57f735c6be35e13605b"
+      "file": "1d328369fee938a69f0585fdfef7aa504072ce4e19fc297e630f615a1d0188e4"
+    },
+    "measuring-desktop-app-memory.md": {
+      "source": "b1df684a559d0871d6f78caf4de4ea6107d54f18e36752c52c44de9ad65d97cc",
+      "file": "20a28613a71793a4cfa5f5acbc22e34725f593f52c060acf7352a0bf2d6b636f"
+    },
+    "multi-machine-agents.md": {
+      "source": "664b28987fac1d0773d0f677df29f859603a55c4a62bfd42297f6282da46da76",
+      "file": "d444511b152ed3fadf7b429602100417143412d62469276cb2286c6e9749e1f5"
     },
     "needs-by-context.md": {
       "source": "f865ca80676f9876512c1fbe033d5a9c17e908a3907054c1d0f953042c604ecc",
-      "file": "3398bb1a38fae69e25763c1a680950a541a510808b6c1489f6b7b0f65d9de7a8"
+      "file": "11d8d080292bbe5e53547a0af9aa1126170c10936003c3a13410a86c64d703fb"
+    },
+    "override-and-its-limits.md": {
+      "source": "94fba9395485f69c7bacd54272329a80ecbdac9abb38d6203e36e4d8f1abd96c",
+      "file": "321435334aee8e5279beead2dc613f12451cdbd677a120376f5038411a142cb5"
+    },
+    "parallel-by-disjoint-paths.md": {
+      "source": "aa959333c42ebb4d065fdcae3d579165d8b468565000b1db6829482c17f9a5fb",
+      "file": "3b53f94b1f07fa4cebe926c63b0b947db4097abf580b58e37f2eff0ddf2bfe8b"
+    },
+    "parallel-work-and-landing.md": {
+      "source": "c793c01d1e0724406b65a90c12207fd773102418d43209bd50fa839f79c51362",
+      "file": "96a7be146ba2e1864094852522ba91e0309864f9e5929b3b7f2b3df7fc66939d"
     },
     "prepared-commands.md": {
-      "source": "9bdd85dacf15df4e30968ed337da153d845c293c3ce3d21e165fab90f77394eb",
-      "file": "ecfacf513aa2a7bc581804995157f813f2e74fb5dfb2aff9dd86108d38f4c1eb"
+      "source": "b1bd4a24b72892149fa785ea72cdb6c8d8a960ec0a0acc79d8eee4448f40ef33",
+      "file": "c753414d016a96f81616e6c90a9383edec098d8a13baeee39acaac9143ff5175"
     },
     "profiling.md": {
-      "source": "e09989001084703f5c56868c455bf340f3dc9753f7d17b23d2bfd804c5f16ca6",
-      "file": "84050f9bacef63db85f521f96811678b887ceca15d2e9857c6977e06bb77d6e7"
+      "source": "f43f4350b84b2a6cba92df4cdf5460af313b6943b502574c925b448e4e20f1e7",
+      "file": "4696f6b2dde9b35049bbaf90f64b7c3ea918afcfb2c2bbc188476f8590e726a8"
+    },
+    "prompt-caching.md": {
+      "source": "589ff09a30b7411210f18c55926e7c8f0d8a2c62002ee5de48cb66d18eafbaf4",
+      "file": "cef742193c776009957bf86387e95c1e28d62fe454b7f2e592f248fc88864763"
     },
     "quality-gate.md": {
-      "source": "0dcd2e157b90d4dd7f0b9ae7410799e334a50e6de5c5f0523b6863537baa2e95",
-      "file": "ff4e28ef1c63d6b7e7727703128aea8bddb245046c208d17b11bdc37ec9563a4"
+      "source": "a4eea4ac11a1a883488bd5b152906bd4925756525f8dc1e7cf547a78bf72357f",
+      "file": "05996cb873dbc70546c5fa007728fa20c40cec644a93ca9af7d4c6f7f6e90f28"
+    },
+    "readme-design.md": {
+      "source": "4c01673a13b15b87c05acb361bf505baa545d317d9ac6988912a3578b07c70b9",
+      "file": "f4e846898e90194f21c844aff4ccc84265233505c14dd912ed529ef096c0ad2c"
+    },
+    "refactoring-and-smells.md": {
+      "source": "fc64b6db67f8d116203af79a3548273da967a84f852182b9fa97dd81f8ed0a9c",
+      "file": "1fedf726b3ff1d7c756aacbbf48b2aeba333c88f2c9d15498fe9d4bf36baf39d"
     },
     "releases-and-versions.md": {
-      "source": "143c2df75503bb7a7da5f90b786598a0b9fb1832fca3b35c3f2a3fddc76a15c9",
-      "file": "b0b0ee972133bc993feb2adc80cfb6d40b95387199625f1687b60b964552b757"
+      "source": "6b42d0ff876ceb171763ba1ff662624a5ac18ba8fca4cac4d72190a5dcdd3bc7",
+      "file": "0609ec4a4156ef2bd367e9d650a4106767f0f56c165791c5b73b4dbfcb41f775"
     },
     "research-flow.md": {
       "source": "a9a1065de2fcb26f8d0d21185ace7861623c5927cafa0d188a9ed0e971d1b0d3",
-      "file": "ad6cc53e75a1e93fbee9a7ca8aab8ce4a7e6c89c3b302e4eb1e51a4bf0633972"
+      "file": "573df5c6770b291356a25213240981a7ff3b72566fe451ad467f69c370515348"
     },
     "retiring-the-old-stack.md": {
       "source": "74ebf22ca7eb21f3b067731ee5005adc711a33ba54c57cf6b58ef753582fbfce",
-      "file": "aa3be2d1b6c47511f99b72b159b0b94b651ce6564a337d04eaf2b16298e53fa5"
+      "file": "4675ca963c0bde071f9a02e2ab411f9229b1cd305b1ac2134394ecc12361e82c"
     },
     "review-lenses.md": {
-      "source": "8d1ff0bbfb5d19a49ae6b2395aac5b357576decb3822ea81f467ad64be611432",
-      "file": "c444112e770c6ec5ea880cc0dbbf26c6529ff5ca7a2a820947dddfffc387b296"
+      "source": "2a3f493b7d31e152773196f6f7923d435ff81cfdf32aa26fddb2f9b121988f43",
+      "file": "e99ae545105a1899c639b7e70f6e11736220b1723de771a9964e69c6d08fb58a"
+    },
+    "root-cause-analysis.md": {
+      "source": "39bd26b65376b4b13a8ae5da87fe143ed01b00fff75348c6515f5c3a126fca32",
+      "file": "fa9199226e90b74866a76f80fed44a25ae1700ab9b72f19c69a3e983f30a9d6c"
     },
     "security-tooling.md": {
-      "source": "4704384554ab4a5e55ccad34e22637b7f59a733fa8af6c3af4407ebe7078831d",
-      "file": "bcd8bb23cdd087a923f0fbf34f1615f4ddbdfb4a7d569fd573e7401a6b6654ae"
+      "source": "3f6c4ff879f531ab3326a990b5dae40c7650cbc1da695fe78b1f21719450002f",
+      "file": "3a64f057900c02097db1cfee318abcab315fc23f4fb1a67dd7dc876e6831a4a7"
+    },
+    "service-boundaries.md": {
+      "source": "2731d3118084550e030e362c1c6f3a2cca9ac24f44b3d1f98276077e41c267bc",
+      "file": "3d1621723d42bd13cc60bfa28e62b3033b998cc0581c20c3500a9fa5dcaa869b"
     },
     "shared-libraries.md": {
-      "source": "589e9ad972883ece035e26ffafa887f35e2d8c8b1982594822447894866423c2",
-      "file": "32f9c7a2a8493e4ff682103c7cb34ec562530706b414b820745e8327875a496b"
+      "source": "c5598ec22b66965025838e8a27cdfb7e78eac832a4794247c149e9bfaebf2f68",
+      "file": "c3b68899b9809177b69edc3cb9ce6fa7f9b11e47b0b2def01f49e7f15c69cb84"
     },
     "sharing-local-pages-over-https.md": {
-      "source": "9da23ce037162dda8bbe116dfd548370dbcd9557886188b497fd8af23be6cee8",
-      "file": "aa41d3ceafa0066138d90966501125db068667d913947fa63011fbaa975c0c1d"
+      "source": "22f46d12e6e4e68dbd475d8b647098c59a27562d1817190096ebe4edc5af0b99",
+      "file": "9d16eca8d3a2e8a8404a2147b1dc64c8e3c459978281f460ef4ad9c72e7a226c"
     },
     "spec-driven-work.md": {
-      "source": "71bbc08dbc62e1c68dc6aae1ec4e6e93dcbaa1580bb0806d6c520f24b3dcc110",
-      "file": "a7017aa38665e66d788090c1de35b1b5eb430a2d2d6810a6cfc3e4e0aa34f71a"
+      "source": "803187730003bb59c2b501b52eebbf89dfa8ea9f9c7de1ba02828717ed0e416c",
+      "file": "51fd8c2111adefe029cc59c8118412485b4c65ef815044b7819736f8f9a9f06d"
     },
     "specifications.md": {
       "source": "9ee481eef154a2dea31a178ad6c4e261f86fecf4d51887a98028d0535c6be1e7",
-      "file": "5cf661374cb7d0b2b93b51b2b650471fcfb33eeef17701aa74229ab3786dc082"
+      "file": "8525a3c4a154a8cf227e90d5ccf1d05b46bf90626fe8318b884b38416692c52b"
     },
     "subagents-and-context.md": {
-      "source": "0ba55aa0073eb312309dd1addf17516cd005d0ad2588112c6364d941c83e7e33",
-      "file": "437a6380509c2992f38a56f5b45e56830a045d0aa85b65913f1735e6280e8e06"
+      "source": "bf74d740ca331d4b9444f4286bca2d3ce65b41299b6261a842213f400f63e0f9",
+      "file": "00ee059134c52f7e4bc726da45db2bb9971ebb81358178f4f88656f6b92a2ae6"
     },
     "supervisor-preflight.md": {
-      "source": "9f1eb349023ebc1cb6811dd4c4e46d58a5cb2c4165bf4eee389072e767c20866",
-      "file": "526c6cfefd9ec1c2d004acbc3bb4116eed4cdacfcd8f1ab0836f0dc8d0dcf553"
+      "source": "da687a44579f0a578e9c12743432004416821ff79ba01eb1d21b70214ca0808d",
+      "file": "4e2d87cc7e1ade7f148e2f681f7064252039cca5ebc6e4587dfcfd1e97402db1"
     },
     "supplement-evidence-research.md": {
       "source": "493c84bb0d99da39344a4621564edcf2b2b73b9491cb4be37d2b4867d0559a9f",
-      "file": "5e1d48d6e568afa241a4840dfdc7a2c85041c8930bb8b09691e63dbae1229264"
+      "file": "b2e5974af376a3666853919e259c8ea40dbc974004ec51289972f8674fa1f4c0"
     },
     "supply-chain-security.md": {
-      "source": "868e30775fe212d3e62693cc2cf0df2dfe3010b2b91a115a99c4747f8a7fcdbc",
-      "file": "3560ced121400e8596c45f3713a717d454692579ca1ab12b3d92db49213d9063"
+      "source": "001df5ddd3b6f0265b2c4be8a2fa94c091662e4c804dea894841204ec2d70461",
+      "file": "a0456e842832d5256b026b6487c40b959a9ff95f2d74b2da7de185ec4c19661e"
+    },
+    "tdd.md": {
+      "source": "f524041920de60215847308ba068b8004237785c1796d64901437eac1959de62",
+      "file": "141d96cef2ee61c86152fa9019dca562526a5d3d2e5dd6b41306ae596d9c6f3f"
     },
     "team-of-teams.md": {
       "source": "a241e2673a367a2e4dd689f50ba356b535534824b34730bbaebdb1b2c12f9f2d",
-      "file": "cabca7664124db206434498eda4a09ee9c905644e5392ebb0de827e487590eea"
+      "file": "bbc935b7cbc2ea574b32a227d4d94a40bd8cca1753efe406ac25a85b95ae443d"
     },
     "testing.md": {
-      "source": "d7c9cc483a42ad4711b15ff2ed6af1d592f2ba6a7615d885a80c4579fadaf8fd",
-      "file": "42e44067130096ffbf4532bc8706c3d72c1a7e70d922f644c79d28ae59c9edb9"
+      "source": "aaaa52fcb31914f290cfa8a697691aff2f378ed53710ee3d0e29401b0824acf5",
+      "file": "b0c53d407b472a2493227dcedfe084c040e5277b1ebde8ef83af06c791dfcd5c"
     },
     "tooling-and-deps.md": {
-      "source": "7c2964c7bb58973b9e8b33cdce166807025527a5e8567448aa3cc52e7507baca",
-      "file": "e2a6ecaa894704967b542aa677fb31d139c53f815cdacd0184925ff6d30d62b6"
+      "source": "c27090635cfb28af37baf96be4221052abfc5ac215fa189cb5a972db84326613",
+      "file": "b5c3fc07c4538bc0d27b1db1d28ddc2d82b4c2926ce79e4e9719e032c9988b1f"
+    },
+    "use-cases-and-domain-model.md": {
+      "source": "119a7e78ca34cef3cc0b56906d185244491bcf2bea0183267db1a5e9c40f5b62",
+      "file": "60134317d9ddbda67bf86fe22216a98fc26203d5a9b4a79a034091592995fc06"
+    },
+    "verification-layers.md": {
+      "source": "0cfd865f101e18c01b8b8728cbb14772d1123828a0fae936fb8f9b7f2387a259",
+      "file": "617c7da88eb8f6fe0a8d3f81e866f78bd9a0f0220de3aa3d81c4f9f4e07ff1e7"
     },
     "wasm-self-contained-pages.md": {
       "source": "ff3bdfe410f2975f9dbe1db16da1adca7cd02499327534949c92cf45f1e803f3",
-      "file": "7cdf32c59b2e4a96300fe78d11bbc09376579a90fac184680174c04394e2d966"
+      "file": "d6524c340d940d583fe03860d99a721d508e08a0afe1a65a1194efe5c4f302ab"
     }
   }
 }

@@ -1,7 +1,7 @@
 ---
 summary: "Replacing a backend piece by piece: freeze the oracle, tag before each removal, test through the new stack, and agent habits that kept the gate honest"
 group: agents
-tags: [migration, agents, quality-gate, process]
+tags: [db, agents, gate, workflow]
 applies-to: [all]
 reviewed: 2026-11-01
 status: draft

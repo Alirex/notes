@@ -3,7 +3,7 @@ summary: "ARCHITECTURE.md and diagrams: hand-written views, generated views with
 group: docs
 tags: [docs, diagrams]
 applies-to: [all]
-reviewed: 2026-11-05
+reviewed: 2026-11-16
 status: stable
 ---
 
@@ -157,6 +157,10 @@ One small generator per repo (a uv script, Typer subcommands `write` and `check`
 tests can feed it a temp tree. HQ's: `scripts/docs/diagrams/diagrams.py`, run as `just docs-diagrams`
 (`just docs-diagrams check` only reports).
 
+- **Stamp every generated file** with `generated-from: <short hash of its input files>; tool: <script> <VERSION>` in
+  the header: a copy outside git (a PDF, a screenshot, a file sent to another repo) stays traceable, and the stamp
+  moves only when the content can. Never the commit sha (unknowable before the commit, it would fail the
+  is-current hook forever). HQ: `source_hash` and `stamp` in `diagrams.py`.
 - **Hermetic and fast sources go in the gate.** YAML manifests, `Cargo.toml`, `docker compose config` and SQLite
   migrations applied to an in-memory database take milliseconds: a prek hook runs `check` when a source or the
   generator changes (HQ: `diagrams-current`).
@@ -238,7 +242,9 @@ HQ: [flows/sign-in.md](https://github.com/evocaslab/hq/blob/main/docs/architectu
 
 ## Invariants as tests
 
-Each boundary named in `ARCHITECTURE.md` gets a check that cites it:
+Each boundary named in `ARCHITECTURE.md` gets a check that cites it. Such a check is an architectural
+**fitness function**: an objective, automatable test of how close the code is to an architectural aim ([Thoughtworks](https://www.thoughtworks.com/insights/articles/fitness-function-driven-development));
+dependency scans and dependency-direction tests both count. It runs in the gate, not by memory:
 
 | Stack | Check |
 | --- | --- |
@@ -300,6 +306,8 @@ check, landing.
   [FAQ](https://c4model.com/diagrams/faq).
 - Aleksey Kladov (matklad), [ARCHITECTURE.md](https://matklad.github.io/2021/02/06/ARCHITECTURE.md.html).
 - Michael Nygard, [Documenting architecture decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).
+- Thoughtworks, "Fitness function-driven development":
+  <https://www.thoughtworks.com/insights/articles/fitness-function-driven-development>, read 2026-11-11.
 - [arc42](https://arc42.org/overview), for the sections a bigger system may need.
 - Mermaid: [C4 (experimental)](https://mermaid.js.org/syntax/c4.html),
   [architecture (beta)](https://mermaid.js.org/syntax/architecture.html),
