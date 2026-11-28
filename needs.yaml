@@ -1,33 +1,33 @@
 # What this repo needs, by context. Schema and rules: HQ practices/needs-by-context.md.
-# Notes only: no code and no CI workflow, so the only context is develop (edit and run the hooks).
+# Notes only: no code. CI (.github/workflows/ci.yml, job `gate`) runs the same prek hooks as develop.
 # Check:  scripts/needs.py lint && scripts/needs.py check --context develop
 # Render: scripts/needs.py render   (the README table between the needs markers)
 version: 1
 needs:
   - kind: tool
     name: git
-    contexts: [develop]
+    contexts: [develop, ci]
     level: required
     why: version control and worktrees
     check: command
     fix: install git
   - kind: tool
     name: uv
-    contexts: [develop]
+    contexts: [develop, ci]
     level: required
-    why: runs scripts/needs.py and installs prek
+    why: runs scripts/needs.py and installs prek (uvx prek in CI)
     check: command
-    fix: curl -LsSf https://astral.sh/uv/install.sh | sh
+    fix: curl -LsSf https://astral.sh/uv/install.sh | sh # bulwark:ignore agent-pipe-to-shell install hint text, never run by a script
   - kind: tool
     name: prek
-    contexts: [develop]
+    contexts: [develop, ci]
     level: required
     why: runs the quality gate hooks
     check: command
     fix: uv tool install prek
   - kind: tool
     name: node
-    contexts: [develop]
+    contexts: [develop, ci]
     level: required
     why: markdownlint and prettier hooks need Node.js on PATH
     check: command
