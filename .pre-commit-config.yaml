@@ -32,7 +32,7 @@ repos:
       - id: pre-commit-update
 
   - repo: https://github.com/JoC0de/pre-commit-prettier
-    rev: v3.9.10
+    rev: v3.10.1
     hooks:
       - id: prettier
         files: \.(json|ya?ml|md)$
@@ -66,7 +66,8 @@ repos:
       - id: needs-fresh
         # needs.yaml lints, matches the ci workflows (none here), and the README table is current.
         name: needs.yaml is current
-        entry: bash -c 'scripts/needs.py lint && scripts/needs.py ci && scripts/needs.py render --check'
+        entry: bash -c 'scripts/needs.py lint && scripts/needs.py ci &&
+          scripts/needs.py render --check'
         language: system
         files: ^(needs\.yaml|README\.md|\.github/workflows/.*|scripts/needs\.py)$
         pass_filenames: false
